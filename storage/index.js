@@ -36,13 +36,22 @@ class Storage {
    * @param {string} value
    */
   async setItem(key, value) {
-    this.data[key] = value;
-    if (!config.VERCEL_ACCESS_TOKEN) return;
-    await updateEnvironment({
-      id: this.env.id,
-      value: JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2),
-      type: ENV_TYPE_PLAIN,
-    });
+    try {
+      this.data[key] = value;
+      if (!config.VERCEL_ACCESS_TOKEN) return;
+      await updateEnvironment({
+        id: this.env.id,
+        value: JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2),
+        type: ENV_TYPE_PLAIN,
+      });
+
+    } catch (e) {
+      if (config.APP_DEBUG) {
+        console.info(e.stack);
+        console.info(e.name);
+        console.info(e.message);
+      }
+    }
   }
 }
 

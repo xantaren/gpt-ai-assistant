@@ -1,4 +1,8 @@
 import Prompt from './prompt.js';
+import Message from "./message.js";
+import {getPrompts, setPrompts} from "../repository/index.js";
+import config from "../../config/index.js";
+import {ROLE_HUMAN} from "../../services/openai.js";
 
 const prompts = new Map();
 
@@ -6,21 +10,54 @@ const prompts = new Map();
  * @param {string} userId
  * @returns {Prompt}
  */
-const getPrompt = (userId) => prompts.get(userId) || new Prompt();
+const getPrompt = (userId) => {
+  if (prompts.get(userId)) {
+    if (config.APP_DEBUG) {
+      console.info(`Retrieved prompt for [${userId}] from memory, length: [${prompts.get(userId).messages?.length}]`);
+    }
+    return prompts.get(userId);
+  }
+  prompts.set(userId, new Prompt(true));
+  const retrievedPromptsObj = getPrompts();
+  if (config.APP_DEBUG) console.info(`retrievedPromptsObj: ${JSON.stringify(retrievedPromptsObj)}`);
+  const prompt = retrievedPromptsObj[userId];
+  if (prompt) {
+    if (config.APP_DEBUG) console.info(`Set prompt from storage to memory for [${userId}], length: [${prompt.messages?.length}]`);
+    prompt.messages.forEach((message) => {
+      const newMessage = new Message(message);
+      prompts.get(userId).messages.push(newMessage);
+    })
+  }
+  return prompts.get(userId);
+}
 
 /**
  * @param {string} userId
  * @param {Prompt} prompt
  */
 const setPrompt = (userId, prompt) => {
-  prompts.set(userId, prompt);
+  (async () => {
+    const newPrompt = {};
+    newPrompt[userId] = prompt;
+    await setPrompts(newPrompt).then(() => {
+      prompts.set(userId, prompt);
+      if (config.APP_DEBUG) console.info(`Successfully set prompt for [${userId}], length: [${prompt.messages?.length}]`);
+    });
+  })()
 };
 
 /**
  * @param {string} userId
  */
 const removePrompt = (userId) => {
-  prompts.delete(userId);
+  (async () => {
+    const newPrompt = {};
+    newPrompt[userId] = new Prompt();
+    await setPrompts(newPrompt).then(() => {
+      prompts.delete(userId);
+      if (config.APP_DEBUG) console.info(`Successfully deleted prompt for [${userId}]`);
+    });
+  })()
 };
 
 const printPrompts = () => {

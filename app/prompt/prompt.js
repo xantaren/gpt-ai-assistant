@@ -11,7 +11,8 @@ const MAX_TOKENS = config.APP_MAX_PROMPT_TOKENS;
 class Prompt {
   messages = [];
 
-  constructor() {
+  constructor(setEmpty = false) {
+    if (setEmpty) return;
     const TIME_PROMPT = `Current time:[[${new Date().toString()}]]. Always report the offset time accounting for user timezone`
     this
       .write(ROLE_SYSTEM,
