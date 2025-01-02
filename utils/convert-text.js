@@ -1,5 +1,6 @@
 import * as OpenCC from 'opencc-js';
 import config from '../config/index.js';
+import {removeMarkdown} from "./index.js";
 
 const convertText = (text) => {
   if (config.APP_LANG === 'zh_TW') {
@@ -10,7 +11,7 @@ const convertText = (text) => {
     const converter = OpenCC.Converter({ from: 'tw', to: 'cn' });
     return converter(text);
   }
-  return text;
+  return removeMarkdown(text);
 };
 
 export default convertText;

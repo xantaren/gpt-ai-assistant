@@ -17,6 +17,7 @@ import {
 } from './handlers/index.js';
 import Context from './context.js';
 import Event from './models/event.js';
+import context from "./context.js";
 
 /**
  * @param {Context} context
