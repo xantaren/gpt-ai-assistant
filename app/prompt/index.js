@@ -17,6 +17,7 @@ const getPrompt = (userId) => {
     }
     return prompts.get(userId);
   }
+  // Set to empty prompt to prevent duplicating messages created on object initialization
   prompts.set(userId, new Prompt(true));
   const retrievedPromptsObj = getPrompts();
   if (config.APP_DEBUG) console.info(`retrievedPromptsObj: ${JSON.stringify(retrievedPromptsObj)}`);
@@ -27,6 +28,9 @@ const getPrompt = (userId) => {
       const newMessage = new Message(message);
       prompts.get(userId).messages.push(newMessage);
     })
+  } else {
+    // No existing prompt, create prompt with default messages
+    prompts.set(userId, new Prompt());
   }
   return prompts.get(userId);
 }
