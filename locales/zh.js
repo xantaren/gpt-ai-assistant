@@ -95,6 +95,7 @@ const zh = {
   __COMMAND_TRANSLATE_TO_JA_TEXT: '上一句翻成日文',
   __COMMAND_TRANSLATE_TO_JA_PROMPT: '將以下內容翻譯成日文。',
   __COMPLETION_DEFAULT_SYSTEM_PROMPT: '以下將使用繁體中文進行對話。',
+  __COMPLETION_DEFAULT_TIME_PROMPT: '現在時間：[[]]',
   __COMPLETION_DEFAULT_HUMAN_PROMPT: (name) => (name ? `我是${name}` : '哈囉'),
   __COMPLETION_DEFAULT_AI_PROMPT: (name) => (name ? `我是${name}` : '哈囉'),
   __COMPLETION_DEFAULT_AI_TONE: (tone) => (tone ? `以${tone}的語氣回應我：` : ''),

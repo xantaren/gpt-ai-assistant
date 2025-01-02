@@ -2,7 +2,6 @@ import Prompt from './prompt.js';
 import Message from "./message.js";
 import {getPrompts, setPrompts} from "../repository/index.js";
 import config from "../../config/index.js";
-import {ROLE_HUMAN} from "../../services/openai.js";
 
 const prompts = new Map();
 

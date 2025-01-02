@@ -2,7 +2,7 @@ import { encode } from 'gpt-3-encoder';
 import config from '../../config/index.js';
 import { t } from '../../locales/index.js';
 import { ROLE_AI, ROLE_HUMAN, ROLE_SYSTEM } from '../../services/openai.js';
-import { addMark } from '../../utils/index.js';
+import {addMark, getCurrentTime} from '../../utils/index.js';
 import Message from './message.js';
 
 const MAX_MESSAGES = config.APP_MAX_PROMPT_MESSAGES + 3;
@@ -13,10 +13,10 @@ class Prompt {
 
   constructor(setEmpty = false) {
     if (setEmpty) return;
-    const TIME_PROMPT = `Current time:[[${new Date().toString()}]]. Always report the offset time accounting for user timezone`
+    const roleSystemContent =
+        `${t('__COMPLETION_DEFAULT_TIME_PROMPT')}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`
     this
-      .write(ROLE_SYSTEM,
-            `${TIME_PROMPT}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`)
+      .write(ROLE_SYSTEM, roleSystemContent)
       .write(ROLE_HUMAN, `${t('__COMPLETION_DEFAULT_HUMAN_PROMPT')(config.HUMAN_NAME)}${config.HUMAN_INIT_PROMPT}`)
       .write(ROLE_AI, `${t('__COMPLETION_DEFAULT_AI_PROMPT')(config.BOT_NAME)}${config.BOT_INIT_PROMPT}`);
   }
@@ -34,8 +34,7 @@ class Prompt {
   }
 
   replaceWithCurrentDate(inputString) {
-    const currentDate = new Date().toString();
-    return inputString.replace(/\[\[.*?\]\]/, `[[${currentDate}]]`);
+    return inputString.replace(/\[\[.*?\]\]/, `[[${getCurrentTime()}]]`);
   }
 
   erase() {
