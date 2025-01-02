@@ -3,6 +3,7 @@ import config from '../config/index.js';
 import {removeMarkdown} from "./index.js";
 
 const convertText = (text) => {
+  text = removeMarkdown(text);
   if (config.APP_LANG === 'zh_TW') {
     const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
     return converter(text);
@@ -11,7 +12,7 @@ const convertText = (text) => {
     const converter = OpenCC.Converter({ from: 'tw', to: 'cn' });
     return converter(text);
   }
-  return removeMarkdown(text);
+  return text;
 };
 
 export default convertText;

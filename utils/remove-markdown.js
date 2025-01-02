@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2015 Stian Grytøyr.
+ * Licensed under the MIT License.
+ * Source: https://github.com/zuchka/remove-markdown
+ */
 const removeMarkdown = (md, options = {}) => {
     options = options || {};
     options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
