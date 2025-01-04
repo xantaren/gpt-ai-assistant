@@ -1,5 +1,6 @@
 import {MongoClient} from 'mongodb';
 import config from '../config/index.js';
+import {truncate} from "../utils/index.js";
 
 const username = config.MONGODB_USERNAME;
 const password = config.MONGODB_PASSWORD;
@@ -25,7 +26,7 @@ export async function initializeMongoDb() {
 }
 
 export async function setKeyValue(key, value) {
-    if (config.APP_DEBUG) console.info(`Setting Key: [${key}], Value: [${value}]`);
+    if (config.APP_DEBUG) console.info(`Setting Key: [${key}], value : [${truncate(value, 50)}]`);
     return await collection.updateOne(
         {key},
         {$set: {key, value}},

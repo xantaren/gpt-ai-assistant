@@ -31,7 +31,7 @@ class Storage {
         this.data = JSON.parse(initialData);
       } else {
         this.data = JSON.parse(value);
-        if (config.APP_DEBUG) console.info(`Data initialized: [${JSON.stringify(this.data)}]`);
+        if (config.APP_DEBUG) console.info(`Data initialized: [${Object.keys(this.data)}]`);
       }
     } catch (error) {
       console.error(`Failed to initialize MongoDB: ${error.message}`);

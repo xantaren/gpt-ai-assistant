@@ -16,6 +16,7 @@ import replyMessage from './reply-message.js';
 import validateSignature from './validate-signature.js';
 import removeMarkdown from "./remove-markdown.js";
 import getCurrentTime from "./get-time.js";
+import {truncate} from "./string-util.js";
 
 export {
   addMark,
@@ -36,4 +37,5 @@ export {
   validateSignature,
   removeMarkdown,
   getCurrentTime,
+  truncate,
 };

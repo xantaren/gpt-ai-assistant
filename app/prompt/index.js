@@ -2,6 +2,7 @@ import Prompt from './prompt.js';
 import Message from "./message.js";
 import {getPrompts, setPrompts} from "../repository/index.js";
 import config from "../../config/index.js";
+import {truncate} from "../../utils/index.js";
 
 const prompts = new Map();
 
@@ -17,7 +18,7 @@ const getPrompt = (userId) => {
     // Initialize a completely empty prompt to prevent stored and default prompts from overlapping or duplicating each other
     const newPrompt = new Prompt(true);
     let messageLength = storedPrompt.messages?.length;
-    if (config.APP_DEBUG) console.info(`Set prompt from storage to memory for [${userId}], length: [${messageLength}]`);
+    if (config.APP_DEBUG) console.info(`Set prompt from storage to memory for [${truncate(userId, 8)}], length: [${messageLength}]`);
     let count = 1;
     storedPrompt.messages.forEach((message) => {
       const newMessage = new Message(message);
@@ -40,7 +41,7 @@ const setPrompt = (userId, prompt) => {
     const newPrompt = {};
     newPrompt[userId] = prompt;
     await setPrompts(newPrompt).then(() => {
-      if (config.APP_DEBUG) console.info(`Successfully set prompt for [${userId}], length: [${prompt.messages?.length}]`);
+      if (config.APP_DEBUG) console.info(`Successfully set prompt for [${truncate(userId, 8)}], length: [${prompt.messages?.length}]`);
     });
   })()
 };
@@ -53,7 +54,7 @@ const removePrompt = (userId) => {
     const newPrompt = {};
     newPrompt[userId] = new Prompt();
     await setPrompts(newPrompt).then(() => {
-      if (config.APP_DEBUG) console.info(`Successfully reset prompt for [${userId}]`);
+      if (config.APP_DEBUG) console.info(`Successfully reset prompt for [${truncate(userId, 8)}]`);
     });
   })()
 };
