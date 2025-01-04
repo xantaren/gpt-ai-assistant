@@ -33,7 +33,7 @@ const generateCompletion = async ({
   const [choice] = data.choices;
   return new Completion({
     text: choice.message.content.trim(),
-    finishReason: choice.finish_reason,
+    finishReason: choice.finish_reason || choice.finishReason,
   });
 };
 
