@@ -12,6 +12,7 @@ const config = Object.freeze({
   APP_URL: env.APP_URL || null,
   APP_PORT: env.APP_PORT || null,
   APP_LANG: env.APP_LANG || 'zh_TW',
+  ENABLE_ZH_CN_CONVERTER: env.ENABLE_ZH_CN_CONVERTER !== 'false', // defaults to true
   APP_WEBHOOK_PATH: env.APP_WEBHOOK_PATH || '/webhook',
   APP_API_TIMEOUT: env.APP_API_TIMEOUT || 9000,
   APP_MAX_GROUPS: Number(env.APP_MAX_GROUPS) || 1000,
