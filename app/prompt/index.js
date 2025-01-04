@@ -12,7 +12,6 @@ const prompts = new Map();
  */
 const getPrompt = (userId) => {
   const retrievedPromptsObj = getPrompts();
-  if (config.APP_DEBUG) console.info(`retrievedPromptsObj: ${JSON.stringify(retrievedPromptsObj)}`);
   const storedPrompt = retrievedPromptsObj[userId];
   if (storedPrompt) {
     // Initialize a completely empty prompt to prevent stored and default prompts from overlapping or duplicating each other
