@@ -3,6 +3,7 @@ import Message from "./message.js";
 import {getPrompts, setPrompts} from "../repository/index.js";
 import config from "../../config/index.js";
 import {truncate} from "../../utils/index.js";
+import {ROLE_SYSTEM} from "../../services/openai.js";
 
 const prompts = new Map();
 
@@ -21,6 +22,9 @@ const getPrompt = (userId) => {
     let count = 1;
     storedPrompt.messages.forEach((message) => {
       const newMessage = new Message(message);
+      if (newMessage.role === ROLE_SYSTEM && config.ALLOW_SYSTEM_PROMPT_OVERWRITE) {
+        newMessage.content = newPrompt.replaceWithCurrentDate(newPrompt.ROLE_SYSTEM_CONTENT);
+      }
       newPrompt.messages.push(newMessage);
       if (config.APP_DEBUG) console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
       count++;

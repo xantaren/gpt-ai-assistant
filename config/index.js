@@ -64,7 +64,8 @@ const config = Object.freeze({
   MONGODB_CLUSTER_NAME: env.MONGODB_CLUSTER_NAME || "",
   MONGODB_DB_NAME: env.MONGODB_DB_NAME || "",
   MONGODB_COLLECTION_NAME: env.MONGODB_COLLECTION_NAME || "",
-  ENABLE_MONGO_DB: env.ENABLE_MONGO_DB === 'true' || false
+  ENABLE_MONGO_DB: env.ENABLE_MONGO_DB === 'true' || false,
+  ALLOW_SYSTEM_PROMPT_OVERWRITE: env.ALLOW_SYSTEM_PROMPT_OVERWRITE !== 'false', // defaults to true
 });
 
 export default config;
