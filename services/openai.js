@@ -34,11 +34,7 @@ const createChatCompletion = ({
   presencePenalty = config.OPENAI_COMPLETION_PRESENCE_PENALTY,
 }) => {
   const body = {
-    model: hasImage({ messages })
-        ? config.OPENAI_VISION_MODEL
-        : config.ENABLE_GEMINI_COMPLETION
-            ? config.GEMINI_COMPLETION_MODEL
-            : config.OPENAI_COMPLETION_MODEL,
+    model: getModelForMessages(messages),
     messages,
     temperature,
     max_tokens: maxTokens,
@@ -86,6 +82,21 @@ const createAudioTranscriptions = ({
     headers: formData.getHeaders(),
   });
 };
+
+function getModelForMessages(messages) {
+  const hasImageAttached = hasImage({ messages });
+  const isGeminiCompletionEnabled = config.ENABLE_GEMINI_COMPLETION;
+
+  if (hasImageAttached && !isGeminiCompletionEnabled) {
+    return config.OPENAI_VISION_MODEL;
+  }
+  // Use same model for Gemini regardless of text or image
+  if (isGeminiCompletionEnabled) {
+    return config.GEMINI_COMPLETION_MODEL;
+  }
+
+  return config.OPENAI_COMPLETION_MODEL;
+}
 
 // TODO: refactor as strategies or factories for multi model support
 function createClient(forceUseOpenAi = false) {

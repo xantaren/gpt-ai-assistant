@@ -103,7 +103,7 @@ const zh = {
   __COMPLETION_SEARCH_NOT_FOUND: '查無資料',
   __COMPLETION_QUOTATION_MARK_OPENING: '「',
   __COMPLETION_QUOTATION_MARK_CLOSING: '」',
-  __COMPLETION_VISION: '這張圖片裡有什麼？',
+  __COMPLETION_VISION: '依照前文給予我適當的回應',
   __ERROR_ECONNABORTED: '這個問題太複雜了',
   __ERROR_UNKNOWN: '系統出了點狀況',
   __ERROR_MAX_GROUPS_REACHED: '群組數量到達上限了',
