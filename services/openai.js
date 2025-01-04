@@ -14,30 +14,11 @@ export const IMAGE_SIZE_256 = '256x256';
 export const IMAGE_SIZE_512 = '512x512';
 export const IMAGE_SIZE_1024 = '1024x1024';
 
-export const MODEL_GPT_3_5_TURBO = 'gpt-3.5-turbo';
-export const MODEL_GPT_4_OMNI = 'gpt-4o';
 export const MODEL_WHISPER_1 = 'whisper-1';
 export const MODEL_DALL_E_3 = 'dall-e-3';
 
-const client = axios.create({
-  baseURL: config.OPENAI_BASE_URL,
-  timeout: config.OPENAI_TIMEOUT,
-  headers: {
-    'Accept-Encoding': 'gzip, deflate, compress',
-  },
-});
-
-client.interceptors.request.use((c) => {
-  c.headers.Authorization = `Bearer ${config.OPENAI_API_KEY}`;
-  return handleRequest(c);
-});
-
-client.interceptors.response.use(handleFulfilled, (err) => {
-  if (err.response?.data?.error?.message) {
-    err.message = err.response.data.error.message;
-  }
-  return handleRejected(err);
-});
+const client = createClient();
+let lazyOpenAiClient = null; // create lazily
 
 const hasImage = ({ messages }) => (
   messages.some(({ content }) => (
@@ -46,7 +27,6 @@ const hasImage = ({ messages }) => (
 );
 
 const createChatCompletion = ({
-  model = config.OPENAI_COMPLETION_MODEL,
   messages,
   temperature = config.OPENAI_COMPLETION_TEMPERATURE,
   maxTokens = config.OPENAI_COMPLETION_MAX_TOKENS,
@@ -54,14 +34,23 @@ const createChatCompletion = ({
   presencePenalty = config.OPENAI_COMPLETION_PRESENCE_PENALTY,
 }) => {
   const body = {
-    model: hasImage({ messages }) ? config.OPENAI_VISION_MODEL : model,
+    model: hasImage({ messages })
+        ? config.OPENAI_VISION_MODEL
+        : config.ENABLE_GEMINI_COMPLETION
+            ? config.GEMINI_COMPLETION_MODEL
+            : config.OPENAI_COMPLETION_MODEL,
     messages,
     temperature,
     max_tokens: maxTokens,
-    frequency_penalty: frequencyPenalty,
-    presence_penalty: presencePenalty,
   };
-  return client.post('/v1/chat/completions', body);
+
+  // Only OpenAI supports these, not Gemini
+  if (!config.ENABLE_GEMINI_COMPLETION) {
+    body.frequency_penalty = frequencyPenalty;
+    body.presence_penalty = presencePenalty;
+  }
+
+  return client.post(config.ENABLE_GEMINI_COMPLETION ? '/chat/completions' : '/v1/chat/completions', body);
 };
 
 const createImage = ({
@@ -76,7 +65,7 @@ const createImage = ({
     size = IMAGE_SIZE_1024;
   }
 
-  return client.post('/v1/images/generations', {
+  return getOpenAiClient().post('/v1/images/generations', {
     model,
     prompt,
     size,
@@ -93,9 +82,49 @@ const createAudioTranscriptions = ({
   const formData = new FormData();
   formData.append('file', buffer, file);
   formData.append('model', model);
-  return client.post('/v1/audio/transcriptions', formData.getBuffer(), {
+  return getOpenAiClient().post('/v1/audio/transcriptions', formData.getBuffer(), {
     headers: formData.getHeaders(),
   });
+};
+
+// TODO: refactor as strategies or factories for multi model support
+function createClient(forceUseOpenAi = false) {
+  // Don't use Gemini for unsupported features like audio transcribe and image generation
+  const shouldUseGemini = config.ENABLE_GEMINI_COMPLETION && !forceUseOpenAi;
+  if (config.APP_DEBUG) console.info(`Is Gemini client [${shouldUseGemini}]`);
+
+  const client = axios.create({
+    baseURL: shouldUseGemini ? config.GEMINI_BASE_URL : config.OPENAI_BASE_URL,
+    timeout: config.OPENAI_TIMEOUT,
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, compress',
+    },
+  });
+
+  client.interceptors.request.use((c) => {
+    c.headers.Authorization = `Bearer ${shouldUseGemini ? config.GEMINI_API_KEY : config.OPENAI_API_KEY}`;
+    return handleRequest(c);
+  });
+
+  client.interceptors.response.use(handleFulfilled, (err) => {
+    if (err.response?.data?.error?.message) {
+      err.message = err.response.data.error.message;
+    }
+    return handleRejected(err);
+  });
+
+  return client;
+}
+
+const getOpenAiClient = () => {
+  if (!lazyOpenAiClient) {
+    if (config.ENABLE_GEMINI_COMPLETION) {
+      lazyOpenAiClient = createClient(true); // Only create new OpenAI client if we've enabled Gemini
+    } else {
+      lazyOpenAiClient = client; // Otherwise reuse existing OpenAI client
+    }
+  }
+  return lazyOpenAiClient;
 };
 
 export {

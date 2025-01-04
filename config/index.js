@@ -46,6 +46,11 @@ const config = Object.freeze({
   OPENAI_IMAGE_GENERATION_SIZE: env.OPENAI_IMAGE_GENERATION_SIZE || '256x256',
   OPENAI_IMAGE_GENERATION_QUALITY: env.OPENAI_IMAGE_GENERATION_QUALITY || 'standard',
   OPENAI_VISION_MODEL: env.OPENAI_VISION_MODEL || 'gpt-4o',
+  ENABLE_GEMINI_COMPLETION: env.ENABLE_GEMINI_COMPLETION === 'true' || false,
+  GEMINI_API_KEY: env.GEMINI_API_KEY || null,
+  // OpenAI compatible Gemini API (https://ai.google.dev/gemini-api/docs/openai)
+  GEMINI_BASE_URL: env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai',
+  GEMINI_COMPLETION_MODEL: env.GEMINI_COMPLETION_MODEL || 'gemini-1.5-flash', // https://ai.google.dev/pricing#1_5flash
   LINE_TIMEOUT: env.LINE_TIMEOUT || env.APP_API_TIMEOUT,
   LINE_CHANNEL_ACCESS_TOKEN: env.LINE_CHANNEL_ACCESS_TOKEN || null,
   LINE_CHANNEL_SECRET: env.LINE_CHANNEL_SECRET || null,
