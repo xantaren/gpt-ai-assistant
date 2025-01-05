@@ -1,26 +1,27 @@
-import storage from '../../storage/index.js';
-import { Source } from '../models/index.js';
+import {getStorage} from '../../storage/index.js';
 
 const FIELD_KEY = 'sources';
 
 /**
  * @returns {Object.<string, Source>}
  */
-const getSources = () => storage.getItem(FIELD_KEY) || {};
+const getSources = (storageId = 'limbo') => getStorage(storageId).getItem(FIELD_KEY) || {};
 
 /**
+ * @param storageId
  * @param {Object.<string, Source>} sources
  */
-const setSources = (sources) => storage.setItem(FIELD_KEY, sources);
+const setSources = (storageId = 'limbo', sources) => getStorage(storageId).setItem(FIELD_KEY, sources);
 
 /**
+ * @param storageId
  * @param {string} contextId
  * @param {function(Source)} callback
  */
-const updateSources = async (contextId, callback) => {
-  const sources = getSources();
+const updateSources = async (storageId = 'limbo', contextId, callback) => {
+  const sources = getSources(storageId);
   callback(sources[contextId]);
-  await setSources(sources);
+  await setSources(storageId, sources);
 };
 
 export {

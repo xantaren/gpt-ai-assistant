@@ -1,5 +1,5 @@
 import { getSources, updateSources, setSources } from './source.js';
-import { getPrompts, setPrompts, updatePrompts } from './prompt.js';
+import { getPrompts, setPrompts } from './prompt.js';
 
 export {
   getSources,
@@ -7,7 +7,6 @@ export {
   setSources,
   getPrompts,
   setPrompts,
-  updatePrompts,
 };
 
 export default null;

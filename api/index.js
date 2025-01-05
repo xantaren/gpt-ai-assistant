@@ -2,7 +2,7 @@ import express from 'express';
 import { handleEvents } from '../app/index.js';
 import config from '../config/index.js';
 import { validateLineSignature } from '../middleware/index.js';
-import storage from '../storage/index.js';
+import { getStorage } from '../storage/index.js';
 import { fetchVersion, getVersion } from '../utils/index.js';
 
 const app = express();
@@ -25,7 +25,12 @@ app.get('/', async (req, res) => {
 
 app.post(config.APP_WEBHOOK_PATH, validateLineSignature, async (req, res) => {
   try {
-    await storage.initialize();
+    if (req.body.events) {
+      await Promise.all(req.body.events?.map(event => {
+        const id = event.source?.groupId || event.source?.userId || 'limbo'
+        getStorage(id).initialize();
+      }))
+    }
     await handleEvents(req.body.events);
     res.sendStatus(200);
   } catch (err) {

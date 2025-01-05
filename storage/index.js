@@ -5,34 +5,44 @@ import {getValueByKey, initializeMongoDb, setKeyValue} from '../services/mongodb
 
 const ENV_KEY = 'APP_STORAGE';
 
+const storages = {}
+
 class Storage {
   env;
 
+  storageId;
+
   data = {};
 
-  async initialize() {
+  constructor(storageId) {
+    this.storageId = storageId;
+  }
+
+  async initialize(storageId = this.storageId || ENV_KEY) {
+    if (config.APP_DEBUG) console.info(`Initializing Storage for ${storageId}`)
     if (config.ENABLE_MONGO_DB) {
-      await this.initializeMongoDb();
+      await this.initializeMongoDb(storageId);
     } else {
       await this.initializeVercel();
     }
   }
 
-  async initializeMongoDb() {
+  async initializeMongoDb(storageId) {
     try {
       await initializeMongoDb();
 
-      const value = await getValueByKey(ENV_KEY);
+      const value = await getValueByKey(storageId);
 
       if (value === null) {
         const initialData = JSON.stringify(this.data);
-        await setKeyValue(ENV_KEY, initialData);
+        await setKeyValue(storageId, initialData);
         if (config.APP_DEBUG) console.info(`No values found, initializing with current data`);
         this.data = JSON.parse(initialData);
       } else {
         this.data = JSON.parse(value);
         if (config.APP_DEBUG) console.info(`Data initialized: [${Object.keys(this.data)}]`);
       }
+      storages[storageId] = this;
     } catch (error) {
       console.error(`Failed to initialize MongoDB: ${error.message}`);
     }
@@ -68,7 +78,7 @@ class Storage {
     this.data[key] = value;
     try {
       if (config.ENABLE_MONGO_DB) {
-        await setKeyValue(ENV_KEY, JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2));
+        await setKeyValue(this.storageId, JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2));
       } else {
         await this.setItemWithVercel(key, value);
       }
@@ -90,6 +100,9 @@ class Storage {
   }
 }
 
-const storage = new Storage();
-
-export default storage;
+export function getStorage(storageId) {
+  if (!storages[storageId]) {
+    storages[storageId] = new Storage(storageId);
+  }
+  return storages[storageId];
+}

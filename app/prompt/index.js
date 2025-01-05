@@ -12,7 +12,7 @@ const prompts = new Map();
  * @returns {Prompt}
  */
 const getPrompt = (userId) => {
-  const retrievedPromptsObj = getPrompts();
+  const retrievedPromptsObj = getPrompts(userId);
   const storedPrompt = retrievedPromptsObj[userId];
   if (storedPrompt) {
     // Initialize a completely empty prompt to prevent stored and default prompts from overlapping or duplicating each other
@@ -43,7 +43,7 @@ const setPrompt = (userId, prompt) => {
   (async () => {
     const newPrompt = {};
     newPrompt[userId] = prompt;
-    await setPrompts(newPrompt).then(() => {
+    await setPrompts(userId, newPrompt).then(() => {
       if (config.APP_DEBUG) console.info(`Successfully set prompt for [${truncate(userId, 8)}], length: [${prompt.messages?.length}]`);
     });
   })()
@@ -56,7 +56,7 @@ const removePrompt = (userId) => {
   (async () => {
     const newPrompt = {};
     newPrompt[userId] = new Prompt();
-    await setPrompts(newPrompt).then(() => {
+    await setPrompts(userId, newPrompt).then(() => {
       if (config.APP_DEBUG) console.info(`Successfully reset prompt for [${truncate(userId, 8)}]`);
     });
   })()
