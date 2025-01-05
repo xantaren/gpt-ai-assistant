@@ -8,16 +8,17 @@ import Message from './message.js';
 const MAX_MESSAGES = config.APP_MAX_PROMPT_MESSAGES + 3;
 const MAX_TOKENS = config.APP_MAX_PROMPT_TOKENS;
 
+export const ROLE_SYSTEM_CONTENT =
+    `${t('__COMPLETION_DEFAULT_TIME_PROMPT')}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`
+
 class Prompt {
-  ROLE_SYSTEM_CONTENT =
-      `${t('__COMPLETION_DEFAULT_TIME_PROMPT')}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`
 
   messages = [];
 
   constructor(setEmpty = false) {
     if (setEmpty) return;
     this
-      .write(ROLE_SYSTEM, this.ROLE_SYSTEM_CONTENT)
+      .write(ROLE_SYSTEM, ROLE_SYSTEM_CONTENT)
       .write(ROLE_HUMAN, `${t('__COMPLETION_DEFAULT_HUMAN_PROMPT')(config.HUMAN_NAME)}${config.HUMAN_INIT_PROMPT}`)
       .write(ROLE_AI, `${t('__COMPLETION_DEFAULT_AI_PROMPT')(config.BOT_NAME)}${config.BOT_INIT_PROMPT}`);
   }
@@ -32,10 +33,6 @@ class Prompt {
   get tokenCount() {
     const encoded = encode(this.toString());
     return encoded.length;
-  }
-
-  replaceWithCurrentDate(inputString) {
-    return inputString.replace(/\[\[.*?\]\]/, `[[${getCurrentTime()}]]`);
   }
 
   erase() {
@@ -59,7 +56,7 @@ class Prompt {
     }
     for (const message of this.messages) {
       if (message.role === ROLE_SYSTEM) {
-        message.content = this.replaceWithCurrentDate(message.content);
+        message.content = replaceWithCurrentDate(message.content);
         break; // Assuming there would only be one system prompt
       }
     }
@@ -98,6 +95,10 @@ class Prompt {
   toString() {
     return this.messages.map((sentence) => sentence.toString()).join('');
   }
+}
+
+export function replaceWithCurrentDate(inputString) {
+  return inputString.replace(/\[\[.*?\]\]/, `[[${getCurrentTime()}]]`);
 }
 
 export default Prompt;

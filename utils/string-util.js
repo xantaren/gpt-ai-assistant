@@ -1,5 +1,5 @@
 export const truncate = function (fullStr, strLen, separator) {
-    if (fullStr.length <= strLen) return fullStr;
+    if (!fullStr || fullStr.length <= strLen) return fullStr;
 
     separator = separator || '...';
 

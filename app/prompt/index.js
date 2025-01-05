@@ -1,4 +1,4 @@
-import Prompt from './prompt.js';
+import Prompt, {replaceWithCurrentDate, ROLE_SYSTEM_CONTENT} from './prompt.js';
 import Message from "./message.js";
 import {getPrompts, setPrompts} from "../repository/index.js";
 import config from "../../config/index.js";
@@ -23,7 +23,7 @@ const getPrompt = (userId) => {
     storedPrompt.messages.forEach((message) => {
       const newMessage = new Message(message);
       if (newMessage.role === ROLE_SYSTEM && config.ALLOW_SYSTEM_PROMPT_OVERWRITE) {
-        newMessage.content = newPrompt.replaceWithCurrentDate(newPrompt.ROLE_SYSTEM_CONTENT);
+        newMessage.content = replaceWithCurrentDate(ROLE_SYSTEM_CONTENT);
       }
       newPrompt.messages.push(newMessage);
       if (config.APP_DEBUG) console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
