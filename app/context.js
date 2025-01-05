@@ -138,7 +138,7 @@ class Context {
    * @throws {Error}
    */
   validate() {
-    const sources = getSources(this.event.isGroup ? this.groupId : this.userId);
+    const sources = getSources();
     const groups = Object.values(sources).filter(({ type }) => type === SOURCE_TYPE_GROUP);
     const users = Object.values(sources).filter(({ type }) => type === SOURCE_TYPE_USER);
     if (this.event.isGroup && !sources[this.groupId] && groups.length >= config.APP_MAX_GROUPS) {
@@ -150,7 +150,7 @@ class Context {
   }
 
   async register() {
-    const sources = getSources(this.event.isGroup ? this.groupId : this.userId);
+    const sources = getSources();
     const newSources = {};
     if (this.event.isGroup && !sources[this.groupId]) {
       const { groupName } = await fetchGroup(this.groupId);
@@ -173,7 +173,7 @@ class Context {
       });
     }
     Object.assign(sources, newSources);
-    if (Object.keys(newSources).length > 0) await setSources(this.userId, sources);
+    if (Object.keys(newSources).length > 0) await setSources(sources);
     this.source = new Source(sources[this.id]);
   }
 

@@ -1,9 +1,7 @@
 import config from '../config/index.js';
-import {createEnvironment, ENV_TYPE_PLAIN, updateEnvironment} from '../services/vercel.js';
-import {fetchEnvironment} from '../utils/index.js';
 import {getValueByKey, initializeMongoDb, setKeyValue} from '../services/mongodb.js';
 
-const ENV_KEY = 'APP_STORAGE';
+export const ENV_KEY = 'APP_STORAGE';
 
 const storages = {}
 
@@ -20,11 +18,7 @@ class Storage {
 
   async initialize(storageId = this.storageId || ENV_KEY) {
     if (config.APP_DEBUG) console.info(`Initializing Storage for ${storageId}`)
-    if (config.ENABLE_MONGO_DB) {
-      await this.initializeMongoDb(storageId);
-    } else {
-      await this.initializeVercel();
-    }
+    await this.initializeMongoDb(storageId);
   }
 
   async initializeMongoDb(storageId) {
@@ -48,20 +42,6 @@ class Storage {
     }
   }
 
-  async initializeVercel() {
-    if (!config.VERCEL_ACCESS_TOKEN) return;
-    this.env = await fetchEnvironment(ENV_KEY);
-    if (!this.env) {
-      const { data } = await createEnvironment({
-        key: ENV_KEY,
-        value: JSON.stringify(this.data),
-        type: ENV_TYPE_PLAIN,
-      });
-      this.env = data.created;
-    }
-    this.data = JSON.parse(this.env.value);
-  }
-
   /**
    * @param {string} key
    * @returns {string}
@@ -77,11 +57,7 @@ class Storage {
   async setItem(key, value) {
     this.data[key] = value;
     try {
-      if (config.ENABLE_MONGO_DB) {
-        await setKeyValue(this.storageId, JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2));
-      } else {
-        await this.setItemWithVercel(key, value);
-      }
+      await setKeyValue(this.storageId, JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2));
 
     } catch (e) {
       if (config.APP_DEBUG) {
@@ -90,14 +66,6 @@ class Storage {
     }
   }
 
-  async setItemWithVercel(key, value) {
-    if (!config.VERCEL_ACCESS_TOKEN) return;
-    await updateEnvironment({
-      id: this.env.id,
-      value: JSON.stringify(this.data, null, config.VERCEL_ENV ? 0 : 2),
-      type: ENV_TYPE_PLAIN,
-    });
-  }
 }
 
 export function getStorage(storageId) {
