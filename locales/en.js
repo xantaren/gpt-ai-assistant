@@ -95,7 +95,7 @@ const en = {
   __COMMAND_TRANSLATE_TO_JA_TEXT: '翻成日文', // TODO
   __COMMAND_TRANSLATE_TO_JA_PROMPT: '請將以下內容翻譯成日文。', // TODO
   __COMPLETION_DEFAULT_SYSTEM_PROMPT: '', // TODO
-  __COMPLETION_DEFAULT_TIME_PROMPT: 'Current time: [[]]',
+  __COMPLETION_DEFAULT_TIME_PROMPT: 'Current time: [[]], this time is realtime and accurate and can be used for user conversation',
   __COMPLETION_DEFAULT_HUMAN_PROMPT: (name) => (name ? `I am ${name}` : 'Hello'),
   __COMPLETION_DEFAULT_AI_PROMPT: (name) => (name ? `I am ${name}` : 'Hello'),
   __COMPLETION_DEFAULT_AI_TONE: (tone) => (tone ? `以${tone}的語氣回應我：` : ''), // TODO
