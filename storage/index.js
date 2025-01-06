@@ -1,5 +1,5 @@
 import config from '../config/index.js';
-import {getValueByKey, initializeMongoDb, setKeyValue} from '../services/mongodb.js';
+import {getValueByKey, setKeyValue} from '../services/mongodb.js';
 
 export const ENV_KEY = 'APP_STORAGE';
 
@@ -23,8 +23,6 @@ class Storage {
 
   async initializeMongoDb(storageId) {
     try {
-      await initializeMongoDb();
-
       const value = await getValueByKey(storageId);
 
       if (value === null) {
