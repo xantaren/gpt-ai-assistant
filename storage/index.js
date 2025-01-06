@@ -10,8 +10,6 @@ class Storage {
 
   storageId;
 
-  retryCount = 0;
-
   data = {};
 
   constructor(storageId) {
@@ -41,10 +39,6 @@ class Storage {
       storages[storageId] = this;
     } catch (error) {
       console.error(`Failed to initialize MongoDB: ${error.message}`);
-      if (this.retryCount < 3) {
-        this.retryCount++;
-        await this.initializeMongoDb(storageId)
-      }
     }
   }
 
