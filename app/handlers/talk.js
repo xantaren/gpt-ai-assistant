@@ -36,7 +36,7 @@ const exec = (context) => check(context) && (
       prompt.write(ROLE_AI);
       prompt.patch(text);
       setPrompt(context.userId, prompt);
-      updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
+      // updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
       const actions = isFinishReasonStop
           ? config.ENABLE_FORGET_SHORTCUT ? [COMMAND_BOT_FORGET] : []
           : [COMMAND_BOT_CONTINUE];
