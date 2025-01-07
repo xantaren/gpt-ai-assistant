@@ -17,8 +17,9 @@ class History {
     return this.messages.length > 0 ? this.messages[this.messages.length - 1] : null;
   }
 
+  //TODO replace with token count from response
   get tokenCount() {
-    const encoded = encode(this.toString());
+    const encoded = "dummy prompt";
     return encoded.length;
   }
 
