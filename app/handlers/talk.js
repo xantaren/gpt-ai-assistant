@@ -37,7 +37,9 @@ const exec = (context) => check(context) && (
       prompt.patch(text);
       setPrompt(context.userId, prompt);
       updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
-      const actions = isFinishReasonStop ? [COMMAND_BOT_FORGET] : [COMMAND_BOT_CONTINUE];
+      const actions = isFinishReasonStop
+          ? config.ENABLE_FORGET_SHORTCUT ? [COMMAND_BOT_FORGET] : []
+          : [COMMAND_BOT_CONTINUE];
       context.pushText(text, actions);
     } catch (err) {
       context.pushError(err);
