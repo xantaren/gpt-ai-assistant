@@ -28,14 +28,18 @@ app.post(config.APP_WEBHOOK_PATH, validateLineSignature, async (req, res) => {
     await Promise.all(req.body.events?.map(event => {
       const id = event.source?.groupId || event.source?.userId || 'limbo'
       return getStorage(id).initialize();
-    }));
+    })).catch(
+        err => {
+          console.error(err);
+          res.sendStatus(500);
+        }
+    );
     await getStorage(ENV_KEY).initialize();
     await handleEvents(req.body.events);
 
     res.sendStatus(200);
   } catch (err) {
     console.error(err.message);
-    res.sendStatus(500);
   }
 });
 
