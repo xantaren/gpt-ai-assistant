@@ -24,6 +24,13 @@ Nanakusa however comes with MongoDB Atlas support, which when enabled will allow
 - The "APP_STORAGE" feature that utilizes vercel's env variables as storage. I completely moved that to MongoDB Atlas as well since... it's easier for me to do. Which means the max user and max group setting will require MongoDB to work correctly.
 - The summary and analyze command features are probably broken since they depend on the 'history' module, which uses Vercel for storage and I haven't refactored it because I didn't really need it. I usually just straight up tell Nanakusa to so without invoking commands. I only fix what I use so, sorry about that.
 
+## TODO
+- Prompts backup feature (I just lost 50k token's worth of chat logs and now I'm sad)
+- Remove image base64 from prompts after set messages or expiration date to save space
+- A proper "memory feature"
+- Use Gemini's own library for Gemini instead of reusing OpenAI's interface
+- Fix ssue where memory gets totally wiped if retrieval from MongoDB is somehow empty
+
 ## Documentations
 The documentation for the orginal GPT AI Assistant is applicable for the Nanakusa Edition
 - <a href="https://memochou1993.github.io/gpt-ai-assistant-docs/" target="_blank">中文</a>
@@ -63,7 +70,7 @@ mongodb+srv://`MONGODB_USERNAME`:`MONGODB_PASSWORD`@`MONGODB_CLUSTER_URL`/?retry
 `MONGODB_COLLECTION_NAME` => your collection name in the database
 
 **Q:** Why is my connection to MongoDB timing out??<br>
-**A:** Go to MongoDB Atlas console, goto "Network Access" in the left-hand side menu, white list the IP `0.0.0.0/0`, which will allow all incoming request from any IP. Vercel doesn't have a static IP so you'll have to white list everything.**
+**A:** Go to MongoDB Atlas console, goto "Network Access" in the left-hand side menu, white list the IP `0.0.0.0/0`, which will allow all incoming request from any IP. Vercel doesn't have a static IP so you'll have to white list everything.
 
 **Q:** When creating a MongoDB Atlas cluster, should I pick Azure, AWS or GCP and which region should I choose??<br>
 **A:** GCP / Iowa (us-central1). It's the closest to the server location of Vercel, I think.
