@@ -6,6 +6,8 @@ import {truncate} from "../../utils/index.js";
 import {ROLE_SYSTEM} from "../../services/openai.js";
 
 const prompts = new Map();
+const MESSAGES_TO_LOG = 100;
+const MESSAGES_KEPT_ON_HEAD_AND_TAIL = Math.floor(MESSAGES_TO_LOG / 2);
 
 /**
  * @param {string} userId
@@ -26,7 +28,10 @@ const getPrompt = (userId) => {
         newMessage.content = replaceWithCurrentDate(ROLE_SYSTEM_CONTENT);
       }
       newPrompt.messages.push(newMessage);
-      if (config.APP_DEBUG) console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
+      if (config.APP_DEBUG
+          && (count < MESSAGES_KEPT_ON_HEAD_AND_TAIL || count > messageLength - MESSAGES_KEPT_ON_HEAD_AND_TAIL)) {
+        console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
+      }
       count++;
     })
     return newPrompt;
