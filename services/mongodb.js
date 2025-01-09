@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 import config from '../config/index.js';
-import { truncate } from "../utils/index.js";
 
 class MongoDbConnection {
     constructor() {
@@ -16,6 +15,8 @@ class MongoDbConnection {
         this.collection = null;
         this.initialized = false;
         this.initializationPromise = null;
+        this.backupCollectionPrefix = 'backup_';
+        this.backupInterval = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
     }
 
     async initialize() {
@@ -45,11 +46,18 @@ class MongoDbConnection {
             await this.client.connect();
             const database = this.client.db(this.dbName);
             this.collection = database.collection(this.collectionName);
+            this.backupCollection = database.collection(this.backupCollectionPrefix + 'data');
 
             // Create an index on key and chunkIndex for efficient retrieval
             await this.collection.createIndex(
                 { key: 1, chunkIndex: 1 },
                 { unique: true, background: true }
+            );
+
+            // Create index on backup timestamp
+            await this.backupCollection.createIndex(
+                { timestamp: 1 },
+                { background: true }
             );
 
             this.initialized = true;
@@ -86,6 +94,107 @@ class MongoDbConnection {
             this.initializationPromise = null;
         }
     }
+
+    async checkAndCreateBackupIfNeeded() {
+        if (!this.initialized) {
+            throw new Error('MongoDB connection not initialized');
+        }
+
+        try {
+            // Find the most recent backup
+            const latestBackup = await this.backupCollection
+                .findOne({}, {sort: {timestamp: -1}});
+
+            const now = new Date();
+
+            // If no backup exists or the last backup is older than 24 hours
+            if (!latestBackup || (now - latestBackup.timestamp) >= this.backupInterval) {
+                if (config.APP_DEBUG) console.info('Creating new backup...');
+
+                const session = this.client.startSession();
+                try {
+                    await session.withTransaction(async () => {
+                        // Store the entire collection as a single backup document
+                        const data = await this.collection.find({}, {session}).toArray();
+
+                        await this.backupCollection.insertOne({
+                            timestamp: now,
+                            data: data,
+                            metadata: {
+                                totalDocuments: data.length,
+                                backupTime: now.toISOString()
+                            }
+                        }, {session});
+
+                        // Keep only the last 7 backups
+                        const oldBackups = await this.backupCollection
+                            .find({})
+                            .sort({timestamp: -1})
+                            .skip(7)
+                            .toArray();
+
+                        if (oldBackups.length > 0) {
+                            await this.backupCollection.deleteMany({
+                                _id: {$in: oldBackups.map(b => b._id)}
+                            }, {session});
+                        }
+                    }, {
+                        readPreference: 'primary',
+                        readConcern: {level: 'majority'},
+                        writeConcern: {w: 'majority'}
+                    });
+
+                    if (config.APP_DEBUG) console.info('Backup created successfully');
+                } finally {
+                    await session.endSession();
+                }
+            } else if (config.APP_DEBUG) {
+                console.info('Recent backup exists, skipping backup creation');
+            }
+        } catch (error) {
+            console.error('Error during backup check/creation:', error);
+            throw error;
+        }
+    }
+
+    async restoreFromLatestBackup() {
+        if (!this.initialized) {
+            throw new Error('MongoDB connection not initialized');
+        }
+
+        const session = this.client.startSession();
+        try {
+            await session.withTransaction(async () => {
+                const latestBackup = await this.backupCollection
+                    .findOne({}, { sort: { timestamp: -1 } });
+
+                if (!latestBackup) {
+                    throw new Error('No backup found');
+                }
+
+                // Clear current collection
+                await this.collection.deleteMany({}, { session });
+
+                // Restore all documents from backup
+                if (latestBackup.data.length > 0) {
+                    await this.collection.insertMany(latestBackup.data, { session });
+                }
+
+                if (config.APP_DEBUG) {
+                    console.info(`Restored from backup created at ${latestBackup.timestamp}`);
+                }
+            }, {
+                readPreference: 'primary',
+                readConcern: { level: 'majority' },
+                writeConcern: { w: 'majority' }
+            });
+        } catch (error) {
+            console.error('Restore from backup failed:', error);
+            throw error;
+        } finally {
+            await session.endSession();
+        }
+    }
 }
 
 // Create singleton instance
@@ -105,6 +214,7 @@ function splitIntoChunks(value) {
 
 export async function setKeyValue(key, value) {
     await mongoConnection.initialize();
+    await mongoConnection.checkAndCreateBackupIfNeeded();
     const collection = mongoConnection.getCollection();
     const client = mongoConnection.getClient();
 
