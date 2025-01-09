@@ -112,6 +112,7 @@ const en = {
   __MESSAGE_NEW_VERSION_AVAILABLE: (version) => `A new version ${version} is now available!`,
   __SOURCE_NAME_SOME_GROUP: 'Someone Group',
   __SOURCE_NAME_SOMEONE: 'Someone',
+  __IMAGE_MESSAGE_PLACEHOLDER: '[Image has expired and been deleted]',
 };
 
 export default en;

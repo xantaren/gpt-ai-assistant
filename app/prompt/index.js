@@ -3,7 +3,8 @@ import Message from "./message.js";
 import {getPrompts, setPrompts} from "../repository/index.js";
 import config from "../../config/index.js";
 import {truncate} from "../../utils/index.js";
-import {ROLE_SYSTEM} from "../../services/openai.js";
+import { ROLE_HUMAN, ROLE_SYSTEM } from "../../services/openai.js";
+import {t} from "../../locales/index.js";
 
 const prompts = new Map();
 const MESSAGES_TO_LOG = 100;
@@ -24,20 +25,36 @@ const getPrompt = (userId) => {
     let count = 1;
     storedPrompt.messages.forEach((message) => {
       const newMessage = new Message(message);
-      if (newMessage.role === ROLE_SYSTEM && config.ALLOW_SYSTEM_PROMPT_OVERWRITE) {
-        newMessage.content = replaceWithCurrentDate(ROLE_SYSTEM_CONTENT);
-      }
+      handleSystemPrompt(newMessage, newPrompt, count, messageLength);
+      handleExpiredImagePrompt(newMessage, newPrompt, count, messageLength);
       newPrompt.messages.push(newMessage);
-      if (config.APP_DEBUG
-          && (count < MESSAGES_KEPT_ON_HEAD_AND_TAIL || count > messageLength - MESSAGES_KEPT_ON_HEAD_AND_TAIL)) {
-        console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
-      }
       count++;
     })
     return newPrompt;
   }
   // A new prompt with default system, human and assistant message
   return new Prompt();
+}
+
+function handleSystemPrompt(newMessage, newPrompt, count, messageLength) {
+  if (newMessage.role === ROLE_SYSTEM && config.ALLOW_SYSTEM_PROMPT_OVERWRITE) {
+    newMessage.content = replaceWithCurrentDate(ROLE_SYSTEM_CONTENT);
+  }
+  if (config.APP_DEBUG
+      && (count < MESSAGES_KEPT_ON_HEAD_AND_TAIL || count > messageLength - MESSAGES_KEPT_ON_HEAD_AND_TAIL)) {
+    if (config.APP_DEBUG) console.info(`${count} of ${messageLength}: [${newMessage.role}] ${newMessage.content}`);
+  }
+}
+
+function handleExpiredImagePrompt(newMessage, newPrompt, count, messageLength) {
+  const numberOfTrailingMessages = messageLength - count;
+  if (newMessage.role === ROLE_HUMAN
+      && numberOfTrailingMessages >= config.MAX_TRAILING_MESSAGES
+      && Array.isArray(newMessage.content)
+      && newMessage.content.some(item => item.type === "image_url")) {
+    newMessage.content = newMessage.content = t('__IMAGE_MESSAGE_PLACEHOLDER');
+    if (config.APP_DEBUG) console.info(`Image Base64 omitted due to trailing Messages exceeding [${config.MAX_TRAILING_MESSAGES}]`);
+  }
 }
 
 /**

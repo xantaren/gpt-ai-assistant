@@ -67,6 +67,7 @@ const config = Object.freeze({
   ENABLE_MONGO_DB: env.ENABLE_MONGO_DB === 'true' || false,
   ENABLE_FORGET_SHORTCUT: env.ENABLE_FORGET_SHORTCUT === 'true' || false,
   ALLOW_SYSTEM_PROMPT_OVERWRITE: env.ALLOW_SYSTEM_PROMPT_OVERWRITE !== 'false', // defaults to true
+  MAX_TRAILING_MESSAGES: Number(env.MAX_TRAILING_MESSAGES) || 100,
 });
 
 export default config;

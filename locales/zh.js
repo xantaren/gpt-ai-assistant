@@ -112,6 +112,7 @@ const zh = {
   __MESSAGE_NEW_VERSION_AVAILABLE: (version) => `最新版本為 ${version}，請從 GitHub 更新。`,
   __SOURCE_NAME_SOME_GROUP: '某群組',
   __SOURCE_NAME_SOMEONE: '某用戶',
+  __IMAGE_MESSAGE_PLACEHOLDER: '[圖片已過期並移除]',
 };
 
 export default zh;
