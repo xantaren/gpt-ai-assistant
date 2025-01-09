@@ -1,6 +1,8 @@
 import { MongoClient } from 'mongodb';
 import config from '../config/index.js';
 
+const ONE_DAY = 1000 * 60 * 60 * 24
+
 class MongoDbConnection {
     constructor() {
         const username = config.MONGODB_USERNAME;
@@ -16,7 +18,8 @@ class MongoDbConnection {
         this.initialized = false;
         this.initializationPromise = null;
         this.backupCollectionPrefix = 'backup_';
-        this.backupInterval = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        this.backupInterval = ONE_DAY
+        this.backupRetentionDays = 7; // Keep backups for 7 days
     }
 
     async initialize() {
@@ -103,7 +106,7 @@ class MongoDbConnection {
         try {
             // Find the most recent backup
             const latestBackup = await this.backupCollection
-                .findOne({}, {sort: {timestamp: -1}});
+                .findOne({}, { sort: { timestamp: -1 } });
 
             const now = new Date();
 
@@ -115,36 +118,33 @@ class MongoDbConnection {
                 try {
                     await session.withTransaction(async () => {
                         // Store the entire collection as a single backup document
-                        const data = await this.collection.find({}, {session}).toArray();
+                        const data = await this.collection.find({}, { session }).toArray();
 
+                        // Create new backup
                         await this.backupCollection.insertOne({
                             timestamp: now,
                             data: data,
                             metadata: {
                                 totalDocuments: data.length,
-                                backupTime: now.toISOString()
+                                backupTime: now.toISOString(),
+                                expiresAt: new Date(now.getTime() + (this.backupRetentionDays * 24 * 60 * 60 * 1000))
                             }
-                        }, {session});
+                        }, { session });
 
-                        // Keep only the last 7 backups
-                        const oldBackups = await this.backupCollection
-                            .find({})
-                            .sort({timestamp: -1})
-                            .skip(7)
-                            .toArray();
+                        // Remove expired backups
+                        await this.backupCollection.deleteMany({
+                            'metadata.expiresAt': { $lt: now }
+                        }, { session });
 
-                        if (oldBackups.length > 0) {
-                            await this.backupCollection.deleteMany({
-                                _id: {$in: oldBackups.map(b => b._id)}
-                            }, {session});
-                        }
                     }, {
                         readPreference: 'primary',
-                        readConcern: {level: 'majority'},
-                        writeConcern: {w: 'majority'}
+                        readConcern: { level: 'majority' },
+                        writeConcern: { w: 'majority' }
                     });
 
-                    if (config.APP_DEBUG) console.info('Backup created successfully');
+                    if (config.APP_DEBUG) {
+                        console.info(`Backup created successfully, will expire in ${this.backupRetentionDays} days`);
+                    }
                 } finally {
                     await session.endSession();
                 }
@@ -157,7 +157,37 @@ class MongoDbConnection {
         }
     }
 
-    async restoreFromLatestBackup() {
+    async listBackups() {
+        if (!this.initialized) {
+            throw new Error('MongoDB connection not initialized');
+        }
+
+        try {
+            const backups = await this.backupCollection
+                .find({})
+                .sort({ timestamp: -1 })
+                .project({
+                    'timestamp': 1,
+                    'metadata': 1
+                })
+                .toArray();
+
+            return backups.map(backup => ({
+                timestamp: backup.timestamp,
+                totalDocuments: backup.metadata.totalDocuments,
+                backupTime: backup.metadata.backupTime,
+                expiresAt: backup.metadata.expiresAt,
+                daysUntilExpiration: Math.ceil(
+                    (new Date(backup.metadata.expiresAt) - new Date()) / ONE_DAY
+                )
+            }));
+        } catch (error) {
+            console.error('Error listing backups:', error);
+            throw error;
+        }
+    }
+
+    async restoreFromBackup(timestamp) {
         if (!this.initialized) {
             throw new Error('MongoDB connection not initialized');
         }
@@ -165,23 +195,25 @@ class MongoDbConnection {
         const session = this.client.startSession();
         try {
             await session.withTransaction(async () => {
-                const latestBackup = await this.backupCollection
-                    .findOne({}, { sort: { timestamp: -1 } });
+                const backup = await this.backupCollection.findOne(
+                    timestamp ? { timestamp: new Date(timestamp) } : {},
+                    { sort: { timestamp: -1 } }
+                );
 
-                if (!latestBackup) {
-                    throw new Error('No backup found');
+                if (!backup) {
+                    throw new Error('No backup found' + (timestamp ? ` for timestamp ${timestamp}` : ''));
                 }
 
                 // Clear current collection
                 await this.collection.deleteMany({}, { session });
 
                 // Restore all documents from backup
-                if (latestBackup.data.length > 0) {
-                    await this.collection.insertMany(latestBackup.data, { session });
+                if (backup.data.length > 0) {
+                    await this.collection.insertMany(backup.data, { session });
                 }
 
                 if (config.APP_DEBUG) {
-                    console.info(`Restored from backup created at ${latestBackup.timestamp}`);
+                    console.info(`Restored from backup created at ${backup.timestamp}`);
                 }
             }, {
                 readPreference: 'primary',
