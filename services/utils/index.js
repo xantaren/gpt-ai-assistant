@@ -6,7 +6,7 @@ const handleRequest = (c) => {
 };
 
 const handleFulfilled = (response) => {
-  if (config.APP_DEBUG) console.info(`[${response.status}] ${response.config.method.toUpperCase()} ${response.config.baseURL}${response.config.url} (${(new Date() - response.config.metadata.startTime)}ms)`);
+  if (config.APP_DEBUG) console.info(`[${response.status}] ${response.config.method.toUpperCase()} ${response.config.baseURL}${response.config.url} | ${JSON.stringify(response.data)} |(${(new Date() - response.config.metadata.startTime)}ms)`);
   return response;
 };
 

@@ -60,6 +60,7 @@ class Storage {
     } catch (e) {
       if (config.APP_DEBUG) {
         console.info(e.message);
+        console.info(e.stack);
       }
     }
   }
