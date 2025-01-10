@@ -38,13 +38,7 @@ class MongoDbConnection {
         try {
             if (config.APP_DEBUG) console.info(`Making connection to: ${this.uri}`);
 
-            this.client = new MongoClient(this.uri, {
-                maxPoolSize: 50,
-                minPoolSize: 5,
-                retryWrites: true,
-                serverSelectionTimeoutMS: 5000,
-                socketTimeoutMS: 45000,
-            });
+            this.client = new MongoClient(this.uri);
 
             await this.client.connect();
             const database = this.client.db(this.dbName);
