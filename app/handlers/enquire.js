@@ -36,7 +36,7 @@ const exec = (context) => check(context) && (
       const { text, isFinishReasonStop } = await generateCompletion({ prompt: partial });
       prompt.patch(text);
       if (!isFinishReasonStop) prompt.write('', command.type);
-      setPrompt(context.userId, prompt);
+      await setPrompt(context.userId, prompt);
       const defaultActions = ALL_COMMANDS.filter(({ type }) => type === command.type);
       const actions = isFinishReasonStop ? defaultActions : [COMMAND_BOT_CONTINUE];
       context.pushText(text, actions);

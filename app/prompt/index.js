@@ -61,27 +61,23 @@ function handleExpiredImagePrompt(newMessage, newPrompt, count, messageLength) {
  * @param {string} userId
  * @param {Prompt} prompt
  */
-const setPrompt = (userId, prompt) => {
-  (async () => {
-    const newPrompt = {};
-    newPrompt[userId] = prompt;
-    await setPrompts(userId, newPrompt).then(() => {
-      if (config.APP_DEBUG) console.info(`Successfully set prompt for [${truncate(userId, 8)}], length: [${prompt.messages?.length}]`);
-    });
-  })()
+const setPrompt = async (userId, prompt) => {
+  const newPrompt = {};
+  newPrompt[userId] = prompt;
+  await setPrompts(userId, newPrompt).then(() => {
+    if (config.APP_DEBUG) console.info(`Successfully set prompt for [${truncate(userId, 8)}], length: [${prompt.messages?.length}]`);
+  });
 };
 
 /**
  * @param {string} userId
  */
-const removePrompt = (userId) => {
-  (async () => {
-    const newPrompt = {};
-    newPrompt[userId] = new Prompt();
-    await setPrompts(userId, newPrompt).then(() => {
-      if (config.APP_DEBUG) console.info(`Successfully reset prompt for [${truncate(userId, 8)}]`);
-    });
-  })()
+const removePrompt = async (userId) => {
+  const newPrompt = {};
+  newPrompt[userId] = new Prompt();
+  await setPrompts(userId, newPrompt).then(() => {
+    if (config.APP_DEBUG) console.info(`Successfully reset prompt for [${truncate(userId, 8)}]`);
+  });
 };
 
 export {

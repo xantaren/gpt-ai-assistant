@@ -25,7 +25,7 @@ const exec = (context) => check(context) && (
       const trimmedText = context.trimmedText.replace(COMMAND_BOT_DRAW.text, '');
       const { url } = await generateImage({ prompt: trimmedText });
       prompt.patch(MOCK_TEXT_OK);
-      setPrompt(context.userId, prompt);
+      await setPrompt(context.userId, prompt);
       updateHistory(context.id, (history) => history.write(config.BOT_NAME, MOCK_TEXT_OK));
       context.pushImage(url);
     } catch (err) {

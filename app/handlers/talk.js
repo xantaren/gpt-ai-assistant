@@ -21,31 +21,30 @@ const check = (context) => (
  * @param {Context} context
  * @returns {Promise<Context>}
  */
-const exec = (context) => check(context) && (
-  async () => {
+const exec = async (context) => {
+    check(context)
     const prompt = getPrompt(context.userId);
     try {
-      if (context.event.isText) {
-        prompt.write(ROLE_HUMAN, `${t('__COMPLETION_DEFAULT_AI_TONE')(config.BOT_TONE)}${context.trimmedText}`);
-      }
-      if (context.event.isImage) {
-        const { trimmedText } = context;
-        prompt.writeImage(ROLE_HUMAN, trimmedText);
-      }
-      const { text, isFinishReasonStop } = await generateCompletion({ prompt });
-      prompt.write(ROLE_AI);
-      prompt.patch(text);
-      setPrompt(context.userId, prompt);
-      // updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
-      const actions = isFinishReasonStop
-          ? config.ENABLE_FORGET_SHORTCUT ? [COMMAND_BOT_FORGET] : []
-          : [COMMAND_BOT_CONTINUE];
-      context.pushText(text, actions);
+        if (context.event.isText) {
+            prompt.write(ROLE_HUMAN, `${t('__COMPLETION_DEFAULT_AI_TONE')(config.BOT_TONE)}${context.trimmedText}`);
+        }
+        if (context.event.isImage) {
+            const {trimmedText} = context;
+            prompt.writeImage(ROLE_HUMAN, trimmedText);
+        }
+        const {text, isFinishReasonStop} = await generateCompletion({prompt});
+        prompt.write(ROLE_AI);
+        prompt.patch(text);
+        await setPrompt(context.userId, prompt);
+        // updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
+        const actions = isFinishReasonStop
+            ? config.ENABLE_FORGET_SHORTCUT ? [COMMAND_BOT_FORGET] : []
+            : [COMMAND_BOT_CONTINUE];
+        context.pushText(text, actions);
     } catch (err) {
-      context.pushError(err);
+        context.pushError(err);
     }
     return context;
-  }
-)();
+}
 
 export default exec;
