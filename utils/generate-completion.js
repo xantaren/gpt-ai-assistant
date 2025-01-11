@@ -1,6 +1,7 @@
 import config from '../config/index.js';
 import { MOCK_TEXT_OK } from '../constants/mock.js';
 import { createChatCompletion, FINISH_REASON_STOP } from '../services/openai.js';
+import {convertGeminiToOpenAICompletionResponse} from "./prompt-converter.js";
 
 class Completion {
   text;
@@ -29,9 +30,14 @@ const generateCompletion = async ({
   prompt,
 }) => {
   if (config.APP_ENV !== 'production') return new Completion({ text: MOCK_TEXT_OK });
-  const { data } = await createChatCompletion({ messages: prompt.messages });
+  const response = await createChatCompletion({ messages: prompt.messages });
+  let data;
+  if (config.ENABLE_GEMINI_COMPLETION) {
+    data = convertGeminiToOpenAICompletionResponse(response.response);
+  } else {
+    data = response.data;
+  }
   const [choice] = data.choices;
-  if (config.APP_DEBUG) console.info(`Actual token usage used by [${data.model}]: [${JSON.stringify(data.usage)}]`)
   return new Completion({
     text: choice.message.content.trim(),
     finishReason: choice.finish_reason || choice.finishReason,

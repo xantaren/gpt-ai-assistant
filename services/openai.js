@@ -2,6 +2,8 @@ import axios from 'axios';
 import FormData from 'form-data';
 import config from '../config/index.js';
 import { handleFulfilled, handleRejected, handleRequest } from './utils/index.js';
+import {convertOpenAIToGeminiPrompt} from "../utils/index.js";
+import {createGeminiChatCompletion} from "./gemini.js";
 
 export const ROLE_SYSTEM = 'system';
 export const ROLE_AI = 'assistant';
@@ -46,7 +48,9 @@ const createChatCompletion = ({
     body.presence_penalty = presencePenalty;
   }
 
-  return client.post(config.ENABLE_GEMINI_COMPLETION ? '/chat/completions' : '/v1/chat/completions', body);
+  return config.ENABLE_GEMINI_COMPLETION
+      ? createGeminiChatCompletion({messages})
+      : client.post('/v1/chat/completions', body);
 };
 
 const createImage = ({

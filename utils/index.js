@@ -17,6 +17,7 @@ import validateSignature from './validate-signature.js';
 import removeMarkdown from "./remove-markdown.js";
 import getCurrentTime from "./get-time.js";
 import {truncate} from "./string-util.js";
+import {convertOpenAIToGeminiPrompt, convertGeminiToOpenAICompletionResponse} from "./prompt-converter.js";
 
 export {
   addMark,
@@ -38,4 +39,6 @@ export {
   removeMarkdown,
   getCurrentTime,
   truncate,
+  convertOpenAIToGeminiPrompt,
+  convertGeminiToOpenAICompletionResponse,
 };
