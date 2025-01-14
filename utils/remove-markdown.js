@@ -1,22 +1,35 @@
 /**
  * Copyright (c) 2015 Stian Grytøyr.
  * Licensed under the MIT License.
- * Source: https://github.com/zuchka/remove-markdown
+ * Original Source: https://github.com/zuchka/remove-markdown
  */
 const removeMarkdown = (md, options = {}) => {
-    options = options || {};
-    options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
-    options.stripListLeaders = options.hasOwnProperty('stripListLeaders') ? options.stripListLeaders : true;
-    options.gfm = options.hasOwnProperty('gfm') ? options.gfm : true;
-    options.useImgAltText = options.hasOwnProperty('useImgAltText') ? options.useImgAltText : true;
-    options.abbr = options.hasOwnProperty('abbr') ? options.abbr : false;
-    options.replaceLinksWithURL = options.hasOwnProperty('replaceLinksWithURL') ? options.replaceLinksWithURL : false;
-    options.htmlTagsToSkip = options.hasOwnProperty('htmlTagsToSkip') ? options.htmlTagsToSkip : [];
-    options.throwError = options.hasOwnProperty('throwError') ? options.throwError : false;
+    options = {
+        gfm: true,
+        htmlTagsToSkip: ['.*'],
+        abbr: false,
+        replaceLinksWithURL: false,
+        useImgAltText: false,
+        preserveCodeBlocks: true,
+        ...options
+    };
 
-    var output = md || '';
+    if (!md) return '';
 
-    // Remove horizontal rules (stripListHeaders conflict with this rule, which is why it has been moved to the top)
+    // Store code blocks temporarily with a unique identifier that won't appear in normal text
+    const codeBlocks = [];
+    const CODE_BLOCK_PLACEHOLDER = '|||CODEBLOCK|||';
+    let output = md;
+
+    if (options.preserveCodeBlocks) {
+        // Handle fenced code blocks (```language\ncode```)
+        output = output.replace(/```[\s\S]+?```/g, (match) => {
+            codeBlocks.push(match);
+            return `${CODE_BLOCK_PLACEHOLDER}${codeBlocks.length - 1}${CODE_BLOCK_PLACEHOLDER}`;
+        });
+    }
+
+    // Remove horizontal rules
     output = output.replace(/^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/gm, '');
 
     try {
@@ -26,30 +39,33 @@ const removeMarkdown = (md, options = {}) => {
             else
                 output = output.replace(/^([\s\t]*)([\*\-\+]|\d+\.)\s+/gm, '$1');
         }
+
         if (options.gfm) {
             output = output
                 // Header
                 .replace(/\n={2,}/g, '\n')
-                // Fenced codeblocks
-                .replace(/~{3}.*\n/g, '')
                 // Strikethrough
-                .replace(/~~/g, '')
-                // Fenced codeblocks
-                .replace(/`{3}.*\n/g, '');
+                .replace(/~~/g, '');
+
+            // Don't process code blocks if we're preserving them
+            if (!options.preserveCodeBlocks) {
+                output = output
+                    .replace(/~{3}.*\n/g, '')
+                    .replace(/`{3}.*\n/g, '');
+            }
         }
+
         if (options.abbr) {
-            // Remove abbreviations
             output = output.replace(/\*\[.*\]:.*\n/, '');
         }
 
-        let htmlReplaceRegex = /<[^>]*>/g
+        let htmlReplaceRegex = /<[^>]*>/g;
         if (options.htmlTagsToSkip && options.htmlTagsToSkip.length > 0) {
-            // Create a regex that matches tags not in htmlTagsToSkip
-            const joinedHtmlTagsToSkip = options.htmlTagsToSkip.join('|')
+            const joinedHtmlTagsToSkip = options.htmlTagsToSkip.join('|');
             htmlReplaceRegex = new RegExp(
                 `<(?!\/?(${joinedHtmlTagsToSkip})(?=>|\s[^>]*>))[^>]*>`,
                 'g',
-            )
+            );
         }
 
         output = output
@@ -57,7 +73,7 @@ const removeMarkdown = (md, options = {}) => {
             .replace(htmlReplaceRegex, '')
             // Remove setext-style headers
             .replace(/^[=\-]{2,}\s*$/g, '')
-            // Remove footnotes?
+            // Remove footnotes
             .replace(/\[\^.+?\](\: .*?$)?/g, '')
             .replace(/\s{0,2}\[.*?\]: .*?$/g, '')
             // Remove images
@@ -66,33 +82,40 @@ const removeMarkdown = (md, options = {}) => {
             .replace(/\[([^\]]*?)\][\[\(].*?[\]\)]/g, options.replaceLinksWithURL ? '$2' : '$1')
             // Remove blockquotes
             .replace(/^(\n)?\s{0,3}>\s?/gm, '$1')
-            // .replace(/(^|\n)\s{0,3}>\s?/g, '\n\n')
-            // Remove reference-style links?
+            // Remove reference-style links
             .replace(/^\s{1,2}\[(.*?)\]: (\S+)( ".*?")?\s*$/g, '')
             // Remove atx-style headers
             .replace(/^(\n)?\s{0,}#{1,6}\s*( (.+))? +#+$|^(\n)?\s{0,}#{1,6}\s*( (.+))?$/gm, '$1$3$4$6')
-            // Remove * emphasis
+            // Remove emphasis
             .replace(/([\*]+)(\S)(.*?\S)??\1/g, '$2$3')
-            // Remove _ emphasis. Unlike *, _ emphasis gets rendered only if
-            //   1. Either there is a whitespace character before opening _ and after closing _.
-            //   2. Or _ is at the start/end of the string.
             .replace(/(^|\W)([_]+)(\S)(.*?\S)??\2($|\W)/g, '$1$3$4$5')
-            // Remove code blocks
-            .replace(/(`{3,})(.*?)\1/gm, '$2')
-            // Remove inline code
-            .replace(/`(.+?)`/g, '$1')
-            // // Replace two or more newlines with exactly two? Not entirely sure this belongs here...
-            // .replace(/\n{2,}/g, '\n\n')
-            // // Remove newlines in a paragraph
-            // .replace(/(\S+)\n\s*(\S+)/g, '$1 $2')
+            // Remove inline code (but not code blocks)
+            .replace(/`([^`]+)`/g, '$1')
             // Replace strike through
             .replace(/~(.*?)~/g, '$1');
+
+        // Restore code blocks
+        if (options.preserveCodeBlocks) {
+            codeBlocks.forEach((block, index) => {
+                const placeholder = `${CODE_BLOCK_PLACEHOLDER}${index}${CODE_BLOCK_PLACEHOLDER}`;
+                output = output.replace(placeholder, block);
+            });
+        }
+
     } catch(e) {
         if (options.throwError) throw e;
-
-        console.error("remove-markdown encountered error: %s", e);
+        console.error("remove-markdown encountered error:", e);
         return md;
     }
+
+    // Clean up any remaining markdown-style formatting
+    output = output
+        // Clean up extra whitespace
+        .replace(/\n\s+\n/g, '\n\n')
+        // Remove extra newlines
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
     return output;
 };
 
