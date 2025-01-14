@@ -74,7 +74,7 @@ const en = {
   __COMMAND_SUM_LAUGH_TEXT: 'Laugh',
   __COMMAND_SUM_LAUGH_PROMPT: 'Please summarize the following content briefly and laugh rudely.',
   __COMMAND_SUM_SUM_LABEL: 'Sum',
-  __COMMAND_SUM_SUM_TEXT: 'Sum',
+  __COMMAND_SUM_SUM_TEXT: '/Sum',
   __COMMAND_SUM_SUM_PROMPT: 'Please summarize the following content and provide some details.',
   __COMMAND_SYS_COMMAND_LABEL: 'Command',
   __COMMAND_SYS_COMMAND_TEXT: 'Command',

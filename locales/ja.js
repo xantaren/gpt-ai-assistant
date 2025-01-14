@@ -74,7 +74,7 @@ const ja = {
   __COMMAND_SUM_LAUGH_TEXT: '笑って',
   __COMMAND_SUM_LAUGH_PROMPT: '以下の内容を要約し、面白く笑ってください。',
   __COMMAND_SUM_SUM_LABEL: '要約して',
-  __COMMAND_SUM_SUM_TEXT: '要約して',
+  __COMMAND_SUM_SUM_TEXT: '/要約して',
   __COMMAND_SUM_SUM_PROMPT: '以下の内容を要約し、説明してください。',
   __COMMAND_SYS_COMMAND_LABEL: 'コマンド',
   __COMMAND_SYS_COMMAND_TEXT: 'コマンド',

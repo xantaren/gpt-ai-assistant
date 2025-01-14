@@ -74,7 +74,7 @@ const zh = {
   __COMMAND_SUM_LAUGH_TEXT: '嘲諷',
   __COMMAND_SUM_LAUGH_PROMPT: '總結以下內容，並給予刻薄的嘲諷。',
   __COMMAND_SUM_SUM_LABEL: '總結',
-  __COMMAND_SUM_SUM_TEXT: '總結',
+  __COMMAND_SUM_SUM_TEXT: '/總結',
   __COMMAND_SUM_SUM_PROMPT: '總結以下內容，並給予細節。',
   __COMMAND_SYS_COMMAND_LABEL: '指令',
   __COMMAND_SYS_COMMAND_TEXT: '指令',
