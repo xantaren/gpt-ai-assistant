@@ -9,7 +9,7 @@ const MAX_MESSAGES = config.APP_MAX_PROMPT_MESSAGES + 3;
 const MAX_TOKENS = config.APP_MAX_PROMPT_TOKENS;
 
 export const ROLE_SYSTEM_CONTENT =
-    `${t('__COMPLETION_DEFAULT_TIME_PROMPT')}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`
+    `${config.ENABLE_GEMINI_GROUNDING_SEARCH ? '' : t('__COMPLETION_DEFAULT_TIME_PROMPT')}\n${config.APP_INIT_PROMPT || t('__COMPLETION_DEFAULT_SYSTEM_PROMPT')}`
 
 class Prompt {
 
@@ -99,7 +99,8 @@ class Prompt {
 }
 
 export function replaceWithCurrentDate(inputString) {
-  return inputString.replace(/\[\[.*?\]\]/, `[[${getCurrentTime()}]]`);
+  return config.ENABLE_GEMINI_GROUNDING_SEARCH 
+      ? inputString : inputString.replace(/\[\[.*?\]\]/, `[[${getCurrentTime()}]]`);
 }
 
 export default Prompt;
