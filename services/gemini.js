@@ -1,4 +1,4 @@
-import {GoogleGenerativeAI, HarmCategory, HarmBlockThreshold} from '@google/generative-ai'
+import {GoogleGenerativeAI, HarmCategory} from '@google/generative-ai'
 import config from '../config/index.js';
 import {convertOpenAIToGeminiPrompt} from "../utils/index.js";
 
@@ -38,8 +38,12 @@ export async function createGeminiChatCompletion(prompt) {
     const model = genAI.getGenerativeModel({
         model: config.GEMINI_COMPLETION_MODEL,
         safetySettings: safetySettings,
-        systemInstruction:systemInstruction
+        systemInstruction:systemInstruction,
     });
+
+    if (config.ENABLE_GEMINI_GROUNDING_SEARCH) {
+        model.tools = [{ googleSearch: {} }];
+    }
 
     const chatSession = model.startChat({
         generationConfig,
