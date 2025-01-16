@@ -33,7 +33,7 @@ const generationConfig = {
 
 
 export async function createGeminiChatCompletion(prompt) {
-    const {history, systemInstruction, message} = convertOpenAIToGeminiPrompt(prompt);
+    let {history, systemInstruction, message} = convertOpenAIToGeminiPrompt(prompt);
 
     const model = genAI.getGenerativeModel({
         model: config.GEMINI_COMPLETION_MODEL,
@@ -45,6 +45,15 @@ export async function createGeminiChatCompletion(prompt) {
         model.tools = [
             {googleSearch: {}}
         ];
+    }
+
+    const keywords = ['查一下'];
+    const containsGroundingSearchKeyword = message.some(obj =>
+        'text' in obj && keywords.some(keyword => obj.text.includes(keyword))
+    );
+    if (config.ENABLE_GEMINI_GROUNDING_SEARCH && containsGroundingSearchKeyword) {
+        console.info('History truncated for grounding search')
+        history = history.slice(Math.max(history.length - 4, 0))
     }
 
     const chatSession = model.startChat({
