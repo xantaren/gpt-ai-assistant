@@ -42,7 +42,9 @@ export async function createGeminiChatCompletion(prompt) {
     });
 
     if (config.ENABLE_GEMINI_GROUNDING_SEARCH) {
-        model.tools = [{ googleSearch: {} }];
+        model.tools = [
+            {googleSearch: {}}
+        ];
     }
 
     const chatSession = model.startChat({
