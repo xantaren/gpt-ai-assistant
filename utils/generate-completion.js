@@ -32,14 +32,18 @@ const generateCompletion = async ({
   if (config.APP_ENV !== 'production') return new Completion({ text: MOCK_TEXT_OK });
   const response = await createChatCompletion({ messages: prompt.messages });
   let data;
+  let isResultGrounded;
   if (config.ENABLE_GEMINI_COMPLETION) {
     data = convertGeminiToOpenAICompletionResponse(response.response);
+    if (Object.keys(response?.response?.candidates[0]?.groundingMetadata).length) {
+      isResultGrounded = true;
+    }
   } else {
     data = response.data;
   }
   const [choice] = data.choices;
   return new Completion({
-    text: choice.message.content.trim(),
+    text: choice.message.content.trim() + (isResultGrounded ? '✅' : ''),
     finishReason: choice.finish_reason || choice.finishReason,
   });
 };
