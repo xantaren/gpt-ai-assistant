@@ -41,16 +41,19 @@ export async function createGeminiChatCompletion(prompt) {
         systemInstruction:systemInstruction,
     });
 
+    if (config.ENABLE_GEMINI_GROUNDING_SEARCH) {
+        model.tools = [
+            {googleSearch: {}}
+        ];
+    }
+
     const keywords = ['查一下'];
     const containsGroundingSearchKeyword = message.some(obj =>
         'text' in obj && keywords.some(keyword => obj.text.includes(keyword))
     );
     if (config.ENABLE_GEMINI_GROUNDING_SEARCH && containsGroundingSearchKeyword) {
-        model.tools = [
-            {googleSearch: {}}
-        ];
+        console.info('History truncated for grounding search')
         history = history.slice(Math.max(history.length - 4, 0))
-        if (config.APP_DEBUG) console.info('History truncated for grounding search')
     }
 
     const chatSession = model.startChat({
