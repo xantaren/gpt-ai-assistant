@@ -126,9 +126,9 @@ class MongoDbConnection {
                         }, { session });
 
                         // Remove expired backups
-                        await this.backupCollection.deleteMany({
-                            'metadata.expiresAt': { $lt: now }
-                        }, { session });
+                        // await this.backupCollection.deleteMany({
+                        //     'metadata.expiresAt': { $lt: now }
+                        // }, { session });
 
                     }, {
                         readPreference: 'primary',
