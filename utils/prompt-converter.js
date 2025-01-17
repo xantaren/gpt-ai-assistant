@@ -1,15 +1,20 @@
 export const convertGeminiToOpenAICompletionResponse = function (geminiResponse) {
     // Extract the necessary information from Gemini's response
     const choices = geminiResponse.candidates.map((candidate, index) => {
+        // Combine all text parts with newlines between them
+        const combinedContent = candidate.content.parts
+            .map(part => part.text)
+            .join('\n\n');
+
         return {
             index: index,
             message: {
-                role: "assistant", // Keep as assistant instead of using candidate.content.role
-                content: candidate.content.parts[0].text,
+                role: "assistant",
+                content: combinedContent,
                 refusal: null
             },
             logprobs: candidate.avgLogprobs,
-            finish_reason: candidate.finishReason.toLowerCase() // Convert STOP to stop
+            finish_reason: candidate.finishReason.toLowerCase()
         };
     });
 
