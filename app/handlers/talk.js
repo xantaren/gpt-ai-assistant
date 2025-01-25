@@ -34,7 +34,8 @@ const exec = async (context) => {
         }
         const {text, isFinishReasonStop} = await generateCompletion({prompt});
         prompt.write(ROLE_AI);
-        prompt.patch(text);
+        // Trim grounded search hint so that it doesn't affect later prompts
+        prompt.patch(text.replace('✅', ""));
         await setPrompt(context.userId, prompt);
         // updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
         const actions = isFinishReasonStop

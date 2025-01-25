@@ -49,6 +49,7 @@ class Prompt {
    */
   write(role, content = '') {
     if (config.APP_DEBUG) {
+      // TODO: This tokenCount is no longer valid and needs to be replaced with actual count from completion response
       let msg = `Message length: [${this.messages.length}]. Token count: [${this.tokenCount}].`;
       console.info(msg);
     }
