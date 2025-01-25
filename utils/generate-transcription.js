@@ -14,14 +14,27 @@ class Transcription {
  * @param {Object} param
  * @param {Buffer} param.buffer
  * @param {string} param.file
- * @returns {Promise<Image>}
+ * @returns {Promise<Transcription>}
  */
 const generateTranscription = async ({
-  buffer,
   file,
+  buffer,
 }) => {
-  const { data } = await createAudioTranscriptions({ buffer, file });
-  return new Transcription(data);
+  try {
+    const result = await createAudioTranscriptions({ file, buffer });
+
+    // Check if `data` exists in the result
+    if (result && result.data) {
+      return new Transcription(result.data);
+    } else {
+      // If `data` doesn't exist, use the raw result (Usually Gemini Case)
+      return new Transcription(result);
+    }
+  } catch (error) {
+    // Handle any errors from createAudioTranscriptions
+    console.error('Error generating transcription:', error);
+    throw error; // Re-throw the error if needed
+  }
 };
 
 export default generateTranscription;

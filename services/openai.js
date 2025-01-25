@@ -3,7 +3,7 @@ import FormData from 'form-data';
 import config from '../config/index.js';
 import { handleFulfilled, handleRejected, handleRequest } from './utils/index.js';
 import {convertOpenAIToGeminiPrompt} from "../utils/index.js";
-import {createGeminiChatCompletion} from "./gemini.js";
+import {createGeminiChatCompletion, transcribeAudio} from "./gemini.js";
 
 export const ROLE_SYSTEM = 'system';
 export const ROLE_AI = 'assistant';
@@ -75,10 +75,14 @@ const createImage = ({
 };
 
 const createAudioTranscriptions = ({
-  buffer,
   file,
+  buffer,
   model = MODEL_WHISPER_1,
 }) => {
+  if (config.ENABLE_GEMINI_COMPLETION) {
+     return transcribeAudio(file);
+  }
+
   const formData = new FormData();
   formData.append('file', buffer, file);
   formData.append('model', model);
