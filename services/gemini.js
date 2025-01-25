@@ -25,12 +25,6 @@ const safetySettings = [
     },
 ];
 
-const model = genAI.getGenerativeModel({
-    model: config.GEMINI_COMPLETION_MODEL,
-    safetySettings: safetySettings,
-    systemInstruction:systemInstruction,
-});
-
 const generationConfig = {
     temperature: 0.9,
     topP: 0.7,
@@ -42,6 +36,12 @@ const generationConfig = {
 
 export async function createGeminiChatCompletion(prompt) {
     let {history, systemInstruction, message} = convertOpenAIToGeminiPrompt(prompt);
+
+    const model = genAI.getGenerativeModel({
+        model: config.GEMINI_COMPLETION_MODEL,
+        safetySettings: safetySettings,
+        systemInstruction:systemInstruction,
+    });
 
     if (config.ENABLE_GEMINI_GROUNDING_SEARCH) {
         model.tools = [
@@ -69,6 +69,12 @@ export async function createGeminiChatCompletion(prompt) {
 }
 
 export async function transcribeAudio(audioFilePath) {
+    const model = genAI.getGenerativeModel({
+        model: config.GEMINI_COMPLETION_MODEL,
+        safetySettings: safetySettings,
+        systemInstruction:'You are an multilingual audio transcriber',
+    });
+
     try {
         // Read the audio file
         const audioBytes = fs.readFileSync(audioFilePath);
