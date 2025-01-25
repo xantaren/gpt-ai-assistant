@@ -72,7 +72,7 @@ export async function transcribeAudio(audioFilePath) {
     const model = genAI.getGenerativeModel({
         model: config.GEMINI_COMPLETION_MODEL,
         safetySettings: safetySettings,
-        systemInstruction:'You are an multilingual audio transcriber',
+        systemInstruction:'You are an Chinese and English audio transcriber',
     });
 
     try {
@@ -87,7 +87,8 @@ export async function transcribeAudio(audioFilePath) {
             },
         };
 
-        const prompt = 'Determine the language of the speech and generate a transcript of the speech in this audio.';
+        const prompt = 'Generate a transcript of the speech in this audio. Chinese should only be Traditional Chinese' +
+            'Output only the transcribed text, nothing else.';
 
         const result = await model.generateContent([prompt, audioData]);
         const response = result.response;

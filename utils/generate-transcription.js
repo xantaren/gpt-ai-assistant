@@ -25,10 +25,14 @@ const generateTranscription = async ({
 
     // Check if `data` exists in the result
     if (result && result.data) {
-      return new Transcription(result.data);
+      const transcription = new Transcription(result.data);
+      console.log('Transcription created:', transcription);
+      return transcription;
     } else {
       // If `data` doesn't exist, use the raw result (Usually Gemini Case)
-      return new Transcription(result);
+      const rawTranscription = new Transcription(result);
+      console.log('Raw transcription created:', rawTranscription);
+      return rawTranscription;
     }
   } catch (error) {
     // Handle any errors from createAudioTranscriptions
