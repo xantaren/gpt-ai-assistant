@@ -25,7 +25,7 @@ const exec = async (context) => {
     check(context)
     const prompt = getPrompt(context.userId);
     try {
-        if (context.event.isText) {
+        if (context.event.isText || context.event.isAudio) {
             prompt.write(ROLE_HUMAN, `${t('__COMPLETION_DEFAULT_AI_TONE')(config.BOT_TONE)}${context.trimmedText}`);
         }
         if (context.event.isImage) {
