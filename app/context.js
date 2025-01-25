@@ -183,6 +183,7 @@ class Context {
     fs.writeFileSync(file, buffer);
     const { text } = await generateTranscription({ file, buffer });
     this.transcription = convertText(text);
+    console.info(`transcribed text: ${this.transcription}`)
   }
 
   async transcribeImage() {
