@@ -1,9 +1,20 @@
 export const convertGeminiToOpenAICompletionResponse = function (geminiResponse) {
+    validateGeminiResponse(geminiResponse);
+    
     // Extract the necessary information from Gemini's response
     const choices = geminiResponse.candidates.map((candidate, index) => {
+        if (!candidate.content || !candidate.content.parts) {
+            throw new Error(`Invalid candidate format at index ${index}`);
+        }
+        
         // Combine all text parts with newlines between them
         const combinedContent = candidate.content.parts
-            .map(part => part.text)
+            .map(part => {
+                if (!part || !part.text) {
+                    throw new Error(`Invalid part format in candidate ${index}`);
+                }
+                return part.text;
+            })
             .join('\n\n');
 
         return {
@@ -14,7 +25,7 @@ export const convertGeminiToOpenAICompletionResponse = function (geminiResponse)
                 refusal: null
             },
             logprobs: candidate.avgLogprobs,
-            finish_reason: candidate.finishReason.toLowerCase()
+            finish_reason: candidate.finishReason?.toLowerCase() || 'stop'
         };
     });
 
@@ -25,8 +36,13 @@ export const convertGeminiToOpenAICompletionResponse = function (geminiResponse)
 }
 
 export const convertOpenAIToGeminiPrompt = function (openAIPrompt) {
+    if (!openAIPrompt || !openAIPrompt.messages || !Array.isArray(openAIPrompt.messages)) {
+        throw new Error('Invalid OpenAI prompt format');
+    }
+
     // Extract messages array
     const messages = openAIPrompt.messages;
+    messages.forEach(validateMessage);
 
     // Initialize result object
     const result = {
@@ -67,6 +83,24 @@ export const convertOpenAIToGeminiPrompt = function (openAIPrompt) {
     }
 
     return result;
+}
+
+function validateMessage(message) {
+    if (!message || typeof message !== 'object') {
+        throw new Error('Invalid message format: message must be an object');
+    }
+    if (!message.role || typeof message.role !== 'string') {
+        throw new Error('Invalid message format: role must be a string');
+    }
+    if (!message.content) {
+        throw new Error('Invalid message format: content is required');
+    }
+}
+
+function validateGeminiResponse(response) {
+    if (!response || !response.candidates || !Array.isArray(response.candidates)) {
+        throw new Error('Invalid Gemini response format');
+    }
 }
 
 function convertContent(content) {
