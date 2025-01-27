@@ -5,6 +5,28 @@ import Logger from '../utils/logger.js';
 import fs from "fs";
 import mime from "mime";
 
+// Error types specific to Gemini API
+const GEMINI_ERROR_TYPES = {
+  RATE_LIMIT: 'RATE_LIMIT',
+  INVALID_REQUEST: 'INVALID_REQUEST',
+  MODEL_LOAD_ERROR: 'MODEL_LOAD_ERROR',
+  INTERNAL_ERROR: 'INTERNAL_ERROR'
+};
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  initialDelayMs: 1000,
+  maxDelayMs: 5000
+};
+
+// Rate limiting configuration
+const RATE_LIMIT = {
+  requestsPerMinute: 60,
+  requestQueue: [],
+  lastRequestTime: 0
+};
+
 const apiKey = config.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 const safetySettings = [
@@ -35,6 +57,63 @@ const generationConfig = {
 };
 
 
+async function handleGeminiError(error) {
+  const errorMessage = error.message || 'Unknown error';
+  
+  if (errorMessage.includes('quota exceeded') || errorMessage.includes('rate limit')) {
+    return { type: GEMINI_ERROR_TYPES.RATE_LIMIT, message: 'Rate limit exceeded' };
+  } else if (errorMessage.includes('invalid request')) {
+    return { type: GEMINI_ERROR_TYPES.INVALID_REQUEST, message: 'Invalid request parameters' };
+  } else if (errorMessage.includes('model loading failed')) {
+    return { type: GEMINI_ERROR_TYPES.MODEL_LOAD_ERROR, message: 'Failed to load model' };
+  }
+  
+  return { type: GEMINI_ERROR_TYPES.INTERNAL_ERROR, message: errorMessage };
+}
+
+async function executeWithRetry(operation) {
+  let lastError;
+  let delay = RETRY_CONFIG.initialDelayMs;
+
+  for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      const errorInfo = await handleGeminiError(error);
+      
+      if (errorInfo.type === GEMINI_ERROR_TYPES.INVALID_REQUEST) {
+        throw error; // Don't retry invalid requests
+      }
+      
+      if (attempt < RETRY_CONFIG.maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay = Math.min(delay * 2, RETRY_CONFIG.maxDelayMs);
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+async function checkRateLimit() {
+  const now = Date.now();
+  const timeWindow = 60000; // 1 minute in milliseconds
+  
+  // Clean up old requests from queue
+  RATE_LIMIT.requestQueue = RATE_LIMIT.requestQueue.filter(
+    time => now - time < timeWindow
+  );
+  
+  if (RATE_LIMIT.requestQueue.length >= RATE_LIMIT.requestsPerMinute) {
+    const oldestRequest = RATE_LIMIT.requestQueue[0];
+    const waitTime = timeWindow - (now - oldestRequest);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  RATE_LIMIT.requestQueue.push(now);
+}
+
 export async function createGeminiChatCompletion(prompt) {
     let {history, systemInstruction, message} = convertOpenAIToGeminiPrompt(prompt);
 
@@ -64,7 +143,11 @@ export async function createGeminiChatCompletion(prompt) {
         history: history,
     });
 
-    const result = await chatSession.sendMessage(message);
+    await checkRateLimit();
+    const result = await executeWithRetry(async () => {
+      const response = await chatSession.sendMessage(message);
+      return response;
+    });
     Logger.json('Gemini response', result);
     return result;
 }
