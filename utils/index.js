@@ -18,6 +18,7 @@ import removeMarkdown from "./remove-markdown.js";
 import getCurrentTime from "./get-time.js";
 import {truncate} from "./string-util.js";
 import {convertOpenAIToGeminiPrompt, convertGeminiToOpenAICompletionResponse} from "./prompt-converter.js";
+import Logger from './logger.js';
 
 export {
   addMark,
@@ -41,4 +42,5 @@ export {
   truncate,
   convertOpenAIToGeminiPrompt,
   convertGeminiToOpenAICompletionResponse,
+  Logger,
 };

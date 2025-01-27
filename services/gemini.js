@@ -1,6 +1,7 @@
 import {GoogleGenerativeAI, HarmCategory} from '@google/generative-ai'
 import config from '../config/index.js';
 import {convertOpenAIToGeminiPrompt} from "../utils/index.js";
+import Logger from '../utils/logger.js';
 import fs from "fs";
 import mime from "mime";
 
@@ -54,7 +55,7 @@ export async function createGeminiChatCompletion(prompt) {
         'text' in obj && keywords.some(keyword => obj.text.includes(keyword))
     );
     if (config.ENABLE_GEMINI_GROUNDING_SEARCH && containsGroundingSearchKeyword) {
-        console.info('History truncated for grounding search')
+        Logger.info('History truncated for grounding search');
         history = history.slice(Math.max(history.length - 4, 0))
     }
 
@@ -64,8 +65,8 @@ export async function createGeminiChatCompletion(prompt) {
     });
 
     const result = await chatSession.sendMessage(message);
-    console.log(JSON.stringify(result, null, 2));
-    return result
+    Logger.json('Gemini response', result);
+    return result;
 }
 
 export async function transcribeAudio(audioFilePath) {
@@ -95,15 +96,15 @@ export async function transcribeAudio(audioFilePath) {
 
         if (response.candidates && response.candidates.length > 0) {
             const transcript = response.candidates[0].content.parts[0].text;
-            console.log('Transcript:', transcript);
+            Logger.info('Transcript:', transcript);
             return transcript;
         } else {
-            console.error('No transcript found in the response.');
-            console.error(response); // Log the full response for debugging
+            Logger.error('No transcript found in the response.');
+            Logger.error('Full response:', response);
             return null;
         }
     } catch (error) {
-        console.error('Error transcribing audio:', error);
+        Logger.error('Error transcribing audio:', error);
         return null;
     }
 }
