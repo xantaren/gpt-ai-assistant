@@ -11,7 +11,8 @@ import reportHandler from './report.js';
 import retryHandler from './retry.js';
 import searchHandler from './search.js';
 import talkHandler from './talk.js';
-import versionHandler from './version.js';
+// Remove this line:
+// import versionHandler from './version.js';
 
 export {
   activateHandler,
@@ -27,5 +28,6 @@ export {
   retryHandler,
   searchHandler,
   talkHandler,
-  versionHandler,
+  // Remove this line:
+  // versionHandler,
 };
