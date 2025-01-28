@@ -34,7 +34,7 @@ const handleContext = async (context) => (
   //|| enquireHandler(context) // TODO: pending removal
   //|| reportHandler(context) // TODO: pending removal
   || retryHandler(context)
-  || searchHandler(context)
+  //|| searchHandler(context) // TODO: pending removal
   || await talkHandler(context)
   || context
 );
