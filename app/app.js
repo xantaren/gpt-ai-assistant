@@ -24,15 +24,15 @@ import context from "./context.js";
  */
 const handleContext = async (context) => (
   activateHandler(context)
-  || commandHandler(context)
+  //|| commandHandler(context) // TODO: pending removal
   || continueHandler(context)
   || deactivateHandler(context)
   || deployHandler(context)
-  || docHandler(context)
+  //|| docHandler(context) // TODO: pending removal
   || drawHandler(context)
   || forgetHandler(context)
-  || enquireHandler(context)
-  || reportHandler(context)
+  //|| enquireHandler(context) // TODO: pending removal
+  //|| reportHandler(context) // TODO: pending removal
   || retryHandler(context)
   || searchHandler(context)
   || await talkHandler(context)
