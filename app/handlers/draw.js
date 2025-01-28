@@ -4,7 +4,6 @@ import { ROLE_AI, ROLE_HUMAN } from '../../services/openai.js';
 import { generateImage } from '../../utils/index.js';
 import { COMMAND_BOT_DRAW } from '../commands/index.js';
 import Context from '../context.js';
-import { updateHistory } from '../history/index.js';
 import { getPrompt, setPrompt } from '../prompt/index.js';
 
 /**
@@ -26,7 +25,6 @@ const exec = (context) => check(context) && (
       const { url } = await generateImage({ prompt: trimmedText });
       prompt.patch(MOCK_TEXT_OK);
       await setPrompt(context.userId, prompt);
-      updateHistory(context.id, (history) => history.write(config.BOT_NAME, MOCK_TEXT_OK));
       context.pushImage(url);
     } catch (err) {
       context.pushError(err);

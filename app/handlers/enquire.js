@@ -4,7 +4,6 @@ import { ROLE_AI, ROLE_HUMAN } from '../../services/openai.js';
 import { generateCompletion, getCommand } from '../../utils/index.js';
 import { ALL_COMMANDS, COMMAND_BOT_CONTINUE, ENQUIRE_COMMANDS } from '../commands/index.js';
 import Context from '../context.js';
-import { getHistory, updateHistory } from '../history/index.js';
 import { getPrompt, setPrompt, Prompt } from '../prompt/index.js';
 
 /**
@@ -23,10 +22,7 @@ const check = (context) => (
  */
 const exec = (context) => check(context) && (
   async () => {
-    updateHistory(context.id, (history) => history.erase());
     const command = getCommand(context.trimmedText);
-    const history = getHistory(context.id);
-    if (!history.lastMessage) return context;
     const reference = command.type === TYPE_TRANSLATE ? history.lastMessage.content : history.toString();
     const content = `${command.prompt}\n${t('__COMPLETION_QUOTATION_MARK_OPENING')}\n${reference}\n${t('__COMPLETION_QUOTATION_MARK_CLOSING')}`;
     const partial = (new Prompt()).write(ROLE_HUMAN, content);

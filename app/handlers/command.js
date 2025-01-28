@@ -6,7 +6,6 @@ import {
   INFO_COMMANDS,
 } from '../commands/index.js';
 import Context from '../context.js';
-import { updateHistory } from '../history/index.js';
 
 /**
  * @param {Context} context
@@ -20,7 +19,6 @@ const check = (context) => context.hasCommand(COMMAND_SYS_COMMAND);
  */
 const exec = (context) => check(context) && (
   async () => {
-    updateHistory(context.id, (history) => history.erase());
     try {
       const buttons = [...INFO_COMMANDS];
       buttons.splice(2, 0, context.source.bot.isActivated ? COMMAND_BOT_DEACTIVATE : COMMAND_BOT_ACTIVATE);

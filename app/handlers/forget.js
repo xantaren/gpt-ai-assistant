@@ -1,6 +1,5 @@
 import { COMMAND_BOT_FORGET } from '../commands/index.js';
 import Context from '../context.js';
-import { removeHistory } from '../history/index.js';
 import { removePrompt } from '../prompt/index.js';
 
 /**
@@ -16,7 +15,6 @@ const check = (context) => context.hasCommand(COMMAND_BOT_FORGET);
 const exec = (context) => check(context) && (
   async () => {
     await removePrompt(context.userId);
-    removeHistory(context.userId);
     context.pushText(COMMAND_BOT_FORGET.reply);
     return context;
   }

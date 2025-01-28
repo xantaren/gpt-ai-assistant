@@ -4,7 +4,6 @@ import { ROLE_AI, ROLE_HUMAN } from '../../services/openai.js';
 import { generateCompletion } from '../../utils/index.js';
 import { COMMAND_BOT_CONTINUE, COMMAND_BOT_FORGET, COMMAND_BOT_TALK } from '../commands/index.js';
 import Context from '../context.js';
-import { updateHistory } from '../history/index.js';
 import { getPrompt, setPrompt } from '../prompt/index.js';
 
 /**
@@ -37,7 +36,6 @@ const exec = async (context) => {
         // Trim grounded search hint so that it doesn't affect later prompts
         prompt.patch(text.replace('✅', ""));
         await setPrompt(context.userId, prompt);
-        // updateHistory(context.id, (history) => history.write(config.BOT_NAME, text));
         const actions = isFinishReasonStop
             ? config.ENABLE_FORGET_SHORTCUT ? [COMMAND_BOT_FORGET] : []
             : [COMMAND_BOT_CONTINUE];

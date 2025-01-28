@@ -15,7 +15,6 @@ import {
   generateTranscription,
 } from '../utils/index.js';
 import { Command, COMMAND_BOT_FORGET, COMMAND_BOT_RETRY } from './commands/index.js';
-import { updateHistory } from './history/index.js';
 import {
   ImageMessage, Message, TemplateMessage, TextMessage,
 } from './messages/index.js';

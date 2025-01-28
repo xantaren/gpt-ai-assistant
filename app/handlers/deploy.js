@@ -3,7 +3,6 @@ import { t } from '../../locales/index.js';
 import { deploy } from '../../services/vercel.js';
 import { COMMAND_SYS_DEPLOY } from '../commands/index.js';
 import Context from '../context.js';
-import { updateHistory } from '../history/index.js';
 
 /**
  * @param {Context} context
@@ -17,7 +16,6 @@ const check = (context) => context.hasCommand(COMMAND_SYS_DEPLOY);
  */
 const exec = (context) => check(context) && (
   async () => {
-    updateHistory(context.id, (history) => history.erase());
     if (!config.VERCEL_DEPLOY_HOOK_URL) context.pushText(t('__ERROR_MISSING_ENV')('VERCEL_DEPLOY_HOOK_URL'));
     try {
       await deploy();
