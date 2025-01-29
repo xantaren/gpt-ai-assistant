@@ -125,13 +125,7 @@ export async function createGeminiChatCompletion(prompt) {
 
     if (config.ENABLE_GEMINI_GROUNDING_SEARCH) {
         model.tools = [
-            {
-                googleSearch: {
-                    description: 'Use this whenever the user\'s query includes search related keyword'
-                    + ' or the user\'s query would require fact checking such as time, weather, or recent events, '
-                    + ' whether or not the chat history contains such information.'
-                }
-            }
+            {googleSearch: {}}
         ];
     }
 
